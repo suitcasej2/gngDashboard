@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import Image from "next/image";
 import { listDraftHarvests } from "@/lib/draft-harvests";
 import { listReadyOrSentHarvests } from "@/lib/outbox-harvests";
 import { listLiveHarvestRsvpChoiceCounts } from "@/lib/live-harvest-rsvp-stats";
@@ -71,20 +72,50 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-dvh bg-[radial-gradient(1200px_circle_at_20%_-10%,theme(colors.primary/15),transparent_40%),radial-gradient(900px_circle_at_100%_0%,theme(colors.accent/35),transparent_35%)]">
+    <div className="min-h-dvh bg-[radial-gradient(1200px_circle_at_20%_-10%,theme(colors.primary/18),transparent_45%),radial-gradient(900px_circle_at_100%_0%,theme(colors.accent/40),transparent_40%)]">
       <div className="mx-auto max-w-5xl px-4 pb-10 pt-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground">CEO Harvest Dashboard</p>
-            <h1 className="text-2xl font-semibold tracking-tight">Drafts</h1>
-            <p className="text-sm text-muted-foreground">
-              Everything here has <span className="font-medium text-foreground">Status = Draft</span> in Airtable.
-            </p>
+        <header className="mb-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl border bg-background/70 p-2 shadow-sm ring-1 ring-foreground/5 backdrop-blur">
+                <Image src="/GNG.svg" alt="Good Neighbor Gardens" width={92} height={46} priority />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground">
+                  Good Neighbor Gardens
+                </p>
+                <h1 className="text-2xl font-semibold tracking-tight">Harvest Box Dashboard</h1>
+              </div>
+            </div>
+
+            <div className="hidden sm:block">
+              <Button asChild className="h-12 px-6 text-base">
+                <Link href="/publish">Publish a new Harvest</Link>
+              </Button>
+            </div>
           </div>
-          <Button asChild className="h-12 w-full text-base sm:w-auto sm:px-6">
-            <Link href="/publish">Publish a new Harvest</Link>
-          </Button>
-        </div>
+
+          <div className="mt-4 sm:hidden">
+            <Button
+              asChild
+              className="h-14 w-full rounded-2xl border-2 border-foreground/15 bg-primary text-primary-foreground shadow-sm"
+            >
+              <Link href="/publish">Publish a new Harvest</Link>
+            </Button>
+          </div>
+
+          <div className="mt-4">
+            <div className="rounded-2xl border bg-background/60 p-3 shadow-sm ring-1 ring-foreground/5 backdrop-blur">
+              <div className="rounded-xl border-2 border-foreground/10 bg-[linear-gradient(180deg,theme(colors.accent/35),theme(colors.background))] p-3">
+                <p className="text-sm text-foreground/90">
+                  Quick view of <span className="font-semibold">Drafts</span>,{" "}
+                  <span className="font-semibold">Live Harvests</span>, and{" "}
+                  <span className="font-semibold">RSVP operations</span>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
 
         <div className="mt-6">
           {draftError ? (

@@ -8,12 +8,12 @@ function colorForChoice(choice: string) {
   // CEO mapping:
   // donate=brown, receive=green, gift=yellow, bank=purple, redeem=light purple
   const c = normalizeChoice(choice);
-  if (c === "donate") return "oklch(0.54 0.08 70)"; // brown
-  if (c === "receive") return "oklch(0.62 0.14 145)"; // green
-  if (c === "gift") return "oklch(0.86 0.16 95)"; // yellow
-  if (c === "bank") return "oklch(0.55 0.17 300)"; // purple
-  if (c === "redeem") return "oklch(0.72 0.14 300)"; // light purple
-  return "oklch(0.7 0 0)"; // fallback gray
+  if (c === "donate") return "#381810"; // brown
+  if (c === "receive") return "#56BB55"; // green
+  if (c === "gift") return "#FFF904"; // yellow
+  if (c === "bank") return "#BC32A3"; // purple
+  if (c === "redeem") return "color-mix(in oklab, #BC32A3, white 40%)"; // light purple
+  return "color-mix(in oklab, #381810, white 35%)"; // fallback
 }
 
 function formatPct(n: number) {

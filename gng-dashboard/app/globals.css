@@ -49,30 +49,39 @@
 }
 
 :root {
-  /* Modern Garden */
+  /* GNG Brand */
+  --brand-yellow: #fff904;
+  --brand-green: #56bb55;
+  --brand-red: #e80000;
+  --brand-brown: #381810;
+  --brand-purple: #bc32a3;
+
+  /* Modern Garden (brand-aligned) */
   --background: oklch(0.985 0.012 95); /* warm cream */
-  --foreground: oklch(0.22 0.02 140); /* deep garden text */
+  --foreground: var(--brand-brown); /* warm dark text */
   --card: oklch(0.995 0.006 95);
   --card-foreground: var(--foreground);
   --popover: oklch(0.995 0.006 95);
   --popover-foreground: var(--foreground);
-  --primary: oklch(0.44 0.13 145); /* leafy green */
-  --primary-foreground: oklch(0.985 0.012 95);
-  --secondary: oklch(0.95 0.02 120); /* pale mint */
-  --secondary-foreground: oklch(0.24 0.03 145);
+  --primary: var(--brand-green);
+  --primary-foreground: #0b1b0b; /* deep green-black for contrast on neon green */
+  --secondary: oklch(0.96 0.01 95); /* cream-tint */
+  --secondary-foreground: var(--brand-brown);
   --muted: oklch(0.96 0.01 95);
-  --muted-foreground: oklch(0.46 0.03 140);
-  --accent: oklch(0.92 0.03 145);
-  --accent-foreground: oklch(0.22 0.02 140);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0.02 120);
-  --input: oklch(0.88 0.02 120);
-  --ring: oklch(0.62 0.08 145);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --muted-foreground: color-mix(in oklab, var(--brand-brown), white 45%);
+  --accent: color-mix(in oklab, var(--brand-yellow), white 35%);
+  --accent-foreground: var(--brand-brown);
+  --destructive: var(--brand-red);
+  --border: color-mix(in oklab, var(--brand-brown), white 82%);
+  --input: color-mix(in oklab, var(--brand-brown), white 82%);
+  --ring: color-mix(in oklab, var(--brand-green), black 25%);
+
+  /* Used by some shadcn components (optional) */
+  --chart-1: var(--brand-green);
+  --chart-2: var(--brand-yellow);
+  --chart-3: var(--brand-red);
+  --chart-4: var(--brand-purple);
+  --chart-5: var(--brand-brown);
   --radius: 0.875rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
