@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 import type { DraftHarvestRow } from "@/types/draft-harvest";
-import { updateLiveHarvestFields } from "@/app/actions/harvest-admin";
+import { updateLiveHarvestFields, updateLiveHarvestStatus } from "@/app/actions/harvest-admin";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -23,8 +23,16 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
   const router = useRouter();
@@ -35,6 +43,10 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
   const [active, setActive] = useState<DraftHarvestRow | null>(null);
   const [draftUrgent, setDraftUrgent] = useState("");
   const [draftSend, setDraftSend] = useState(false);
+  const [draftStatus, setDraftStatus] = useState<"Completed" | "Sent">("Completed");
+
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [statusActive, setStatusActive] = useState<DraftHarvestRow | null>(null);
 
   function openDialog(row: DraftHarvestRow) {
     setActionError(null);
@@ -47,6 +59,18 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
   function closeDialog() {
     setDialogOpen(false);
     setActive(null);
+  }
+
+  function openStatusDialog(row: DraftHarvestRow) {
+    setActionError(null);
+    setStatusActive(row);
+    setDraftStatus(row.status === "Sent" ? "Sent" : "Completed");
+    setStatusDialogOpen(true);
+  }
+
+  function closeStatusDialog() {
+    setStatusDialogOpen(false);
+    setStatusActive(null);
   }
 
   return (
@@ -64,7 +88,6 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
             <TableRow>
               <TableHead className="min-w-[220px]">Harvest</TableHead>
               <TableHead className="min-w-[120px]">Start Date</TableHead>
-              <TableHead className="min-w-[120px]">Start Time</TableHead>
               <TableHead className="min-w-[180px]">Last Modified</TableHead>
               <TableHead className="min-w-[160px]">Status</TableHead>
               <TableHead className="w-[72px] text-right"> </TableHead>
@@ -75,7 +98,6 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
               <TableRow key={r.id} className="align-middle">
                 <TableCell className="font-medium">{r.name}</TableCell>
                 <TableCell className="text-muted-foreground whitespace-nowrap">{r.startDate ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground whitespace-nowrap">{r.startTime ?? "—"}</TableCell>
                 <TableCell className="text-muted-foreground whitespace-nowrap">{r.lastModified ?? "—"}</TableCell>
                 <TableCell className="text-muted-foreground whitespace-nowrap">
                   {r.status?.trim() ? r.status : "—"}
@@ -103,6 +125,15 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                         }}
                       >
                         Send Urgent Message
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="h-11 text-base"
+                        onSelect={() => {
+                          window.setTimeout(() => openStatusDialog(r), 0);
+                        }}
+                      >
+                        Change Status
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -180,6 +211,68 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                     return;
                   }
                   closeDialog();
+                  router.refresh();
+                });
+              }}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={statusDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) closeStatusDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-md" showCloseButton>
+          <DialogHeader>
+            <DialogTitle>Change Status</DialogTitle>
+            <DialogDescription>
+              {statusActive ? (
+                <>
+                  Update status for <span className="font-medium text-foreground">{statusActive.name}</span>.
+                </>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select value={draftStatus} onValueChange={(v) => setDraftStatus(v as any)} disabled={pending}>
+              <SelectTrigger className="h-12 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Sent">Sent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="secondary" className="h-12" disabled={pending} onClick={closeStatusDialog}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="h-12 px-6"
+              disabled={pending || !statusActive}
+              onClick={() => {
+                if (!statusActive) return;
+                setActionError(null);
+                start(async () => {
+                  const res = await updateLiveHarvestStatus({
+                    recordId: statusActive.id,
+                    status: draftStatus,
+                  });
+                  if (!res.ok) {
+                    setActionError(res.message);
+                    return;
+                  }
+                  closeStatusDialog();
                   router.refresh();
                 });
               }}

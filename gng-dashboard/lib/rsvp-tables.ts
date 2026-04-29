@@ -49,6 +49,13 @@ export type NonResponderRow = {
 
 export type RsvpChoiceCount = { choice: string; count: number };
 
+export type AllRsvpRow = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  choice: string | null;
+};
+
 export async function listSentRsvpChoiceCounts(): Promise<RsvpChoiceCount[]> {
   const base = getAirtableBase();
   const tableName = getHarvestRsvpsTableName();
@@ -69,6 +76,27 @@ export async function listSentRsvpChoiceCounts(): Promise<RsvpChoiceCount[]> {
   return Array.from(counts.entries())
     .map(([choice, count]) => ({ choice, count }))
     .sort((a, b) => (b.count !== a.count ? b.count - a.count : a.choice.localeCompare(b.choice)));
+}
+
+export async function listSentRsvpsAll(): Promise<AllRsvpRow[]> {
+  const base = getAirtableBase();
+  const tableName = getHarvestRsvpsTableName();
+
+  const records = await base(tableName)
+    .select({
+      filterByFormula: "FIND('Sent', ARRAYJOIN({Status (from Harvests)}))",
+    })
+    .all();
+
+  return records.map((r) => {
+    const f = (r.fields || {}) as Record<string, unknown>;
+    return {
+      id: r.id,
+      name: arrayFirstString(getField(f, "Full Name (from Subscriber)")),
+      email: arrayFirstString(getField(f, "Email (from Subscriber)")),
+      choice: getRsvpChoiceFromFields(f),
+    };
+  });
 }
 
 export async function listSentNeedsDelivery(): Promise<DeliveryRow[]> {

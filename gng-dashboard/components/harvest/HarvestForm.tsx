@@ -200,27 +200,27 @@ export function HarvestForm(props?: {
               <p className="font-medium">Record ID</p>
               <p className="break-all text-muted-foreground">{publishedId}</p>
             </div>
-            <Button
-              className="w-full h-12 text-base"
-              onClick={() => {
-                setPublishedId(null);
-                setSubmitError(null);
-                if (isEdit) {
-                  // In edit mode, return to dashboard rather than wiping the editor.
-                  window.location.href = "/";
-                  return;
-                }
-
-                setStatus("Draft");
-                setHarvestBoxImageUrl(undefined);
-                setRecipeImageUrl(undefined);
-                setBbImageUrl(undefined);
-                setDonorLogoUrl(undefined);
-                setForm(defaultHarvestFormState());
-              }}
-            >
-              {isEdit ? "Back to dashboard" : "Create Another Harvest"}
+            <Button asChild className="w-full h-12 text-base">
+              <Link href="/">Back to dashboard</Link>
             </Button>
+            {!isEdit ? (
+              <Button
+                variant="secondary"
+                className="w-full h-12 text-base"
+                onClick={() => {
+                  setPublishedId(null);
+                  setSubmitError(null);
+                  setStatus("Draft");
+                  setHarvestBoxImageUrl(undefined);
+                  setRecipeImageUrl(undefined);
+                  setBbImageUrl(undefined);
+                  setDonorLogoUrl(undefined);
+                  setForm(defaultHarvestFormState());
+                }}
+              >
+                Create another harvest
+              </Button>
+            ) : null}
           </CardContent>
         </Card>
       </div>
@@ -435,6 +435,22 @@ export function HarvestForm(props?: {
                   value={form.recipeUrl}
                   onChange={(e) => setForm((p) => ({ ...p, recipeUrl: e.target.value }))}
                 />
+              </div>
+              <div className="pt-1">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                  asChild
+                >
+                  <a
+                    href="https://www.goodneighborgardens.com/recipes"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Browse recipes
+                  </a>
+                </Button>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="storageTips">Storage Tips</Label>

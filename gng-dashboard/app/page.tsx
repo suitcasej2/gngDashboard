@@ -4,14 +4,14 @@ import Image from "next/image";
 import { listDraftHarvests } from "@/lib/draft-harvests";
 import { listReadyOrSentHarvests } from "@/lib/outbox-harvests";
 import { listLiveHarvestRsvpChoiceCounts } from "@/lib/live-harvest-rsvp-stats";
-import { listSentGiftRecipients, listSentNeedsDelivery, listSentNonRespondersAutoDonate } from "@/lib/rsvp-tables";
+import { listSentGiftRecipients, listSentNeedsDelivery, listSentNonRespondersAutoDonate, listSentRsvpsAll } from "@/lib/rsvp-tables";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DraftHarvestsTable } from "@/components/harvest/draft-harvests-table";
 import { LiveHarvestsTable } from "@/components/harvest/live-harvests-table";
 import { RsvpChoiceChart } from "@/components/harvest/rsvp-choice-chart";
-import { GiftRecipientsTable, NeedsDeliveryTable, NonRespondersTable } from "@/components/rsvp/rsvp-tables";
+import { AllRsvpsTable, GiftRecipientsTable, NeedsDeliveryTable, NonRespondersTable } from "@/components/rsvp/rsvp-tables";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const metadata: Metadata = {
@@ -34,6 +34,7 @@ export default async function HomePage() {
   let deliveryRows: Awaited<ReturnType<typeof listSentNeedsDelivery>> = [];
   let giftRows: Awaited<ReturnType<typeof listSentGiftRecipients>> = [];
   let nonResponderRows: Awaited<ReturnType<typeof listSentNonRespondersAutoDonate>> = [];
+  let allRsvpRows: Awaited<ReturnType<typeof listSentRsvpsAll>> = [];
   let rsvpTablesError: string | null = null;
 
   try {
@@ -60,10 +61,11 @@ export default async function HomePage() {
   }
 
   try {
-    [deliveryRows, giftRows, nonResponderRows] = await Promise.all([
+    [deliveryRows, giftRows, nonResponderRows, allRsvpRows] = await Promise.all([
       listSentNeedsDelivery(),
       listSentGiftRecipients(),
       listSentNonRespondersAutoDonate(),
+      listSentRsvpsAll(),
     ]);
   } catch (e) {
     const msg =
@@ -77,7 +79,7 @@ export default async function HomePage() {
         <header className="mb-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl border bg-background/70 p-2 shadow-sm ring-1 ring-foreground/5 backdrop-blur">
+              <div className="rounded-2xl border bg-background/70 p-2 shadow-sm ring-1 ring-foreground/5 backdrop-blur [box-shadow:0_0_0_2px_color-mix(in_oklab,var(--brand-yellow),white_35%),0_1px_0_0_color-mix(in_oklab,var(--brand-brown),white_80%),0_10px_25px_-15px_rgba(0,0,0,0.35)]">
                 <Image src="/GNG.svg" alt="Good Neighbor Gardens" width={92} height={46} priority />
               </div>
               <div className="min-w-0">
@@ -106,7 +108,7 @@ export default async function HomePage() {
 
           <div className="mt-4">
             <div className="rounded-2xl border bg-background/60 p-3 shadow-sm ring-1 ring-foreground/5 backdrop-blur">
-              <div className="rounded-xl border-2 border-foreground/10 bg-[linear-gradient(180deg,theme(colors.accent/35),theme(colors.background))] p-3">
+              <div className="rounded-xl border-2 border-[#FFF904]/35 bg-[linear-gradient(180deg,rgba(255,249,4,0.28),rgba(255,249,4,0.10),theme(colors.background))] p-3">
                 <p className="text-sm text-foreground/90">
                   Quick view of <span className="font-semibold">Drafts</span>,{" "}
                   <span className="font-semibold">Live Harvests</span>, and{" "}
@@ -152,7 +154,7 @@ export default async function HomePage() {
                 {outboxError}
                 <br />
                 This is usually a permissions issue (your Airtable token needs read access) or a Status option name mismatch
-                (the filter expects <span className="font-medium">Ready to Send</span> and <span className="font-medium">Sent</span>).
+                (the filter expects <span className="font-medium">Publish</span> and <span className="font-medium">Sent</span>).
               </AlertDescription>
             </Alert>
           ) : (
@@ -160,7 +162,7 @@ export default async function HomePage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Live Harvests</CardTitle>
                 <CardDescription>
-                  Harvests with Status = Ready to Send or Sent (most recently modified first). Use the row menu (⋯) to
+                  Harvests with Status = Publish or Sent (most recently modified first). Use the row menu (⋯) to
                   open <span className="font-medium">Send Urgent Message</span> and update fields for that harvest.
                 </CardDescription>
               </CardHeader>
@@ -205,6 +207,14 @@ export default async function HomePage() {
                     ) : (
                       <RsvpChoiceChart data={rsvpCounts} />
                     )}
+
+                    <div className="mt-6">
+                      {allRsvpRows.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No RSVPs found.</p>
+                      ) : (
+                        <AllRsvpsTable rows={allRsvpRows} />
+                      )}
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="delivery" className="mt-4">

@@ -48,7 +48,6 @@ export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
             <TableRow>
               <TableHead className="min-w-[220px]">Harvest</TableHead>
               <TableHead className="min-w-[120px]">Start Date</TableHead>
-              <TableHead className="min-w-[120px]">Start Time</TableHead>
               <TableHead className="min-w-[180px]">Last Modified</TableHead>
               <TableHead className="min-w-[220px]">Status</TableHead>
               <TableHead className="w-[72px] text-right"> </TableHead>
@@ -59,7 +58,6 @@ export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
               <TableRow key={r.id}>
                 <TableCell className="font-medium">{r.name}</TableCell>
                 <TableCell className="text-muted-foreground whitespace-nowrap">{r.startDate ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground whitespace-nowrap">{r.startTime ?? "—"}</TableCell>
                 <TableCell className="text-muted-foreground whitespace-nowrap">{r.lastModified ?? "—"}</TableCell>
                 <TableCell>
                   <Select
@@ -83,7 +81,7 @@ export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Draft">Draft</SelectItem>
-                      <SelectItem value="Ready to Send">Ready to Send</SelectItem>
+                      <SelectItem value="Publish">Publish</SelectItem>
                     </SelectContent>
                   </Select>
                 </TableCell>

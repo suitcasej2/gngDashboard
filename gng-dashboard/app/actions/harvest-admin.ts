@@ -21,7 +21,8 @@ function messageFromAirtable(err: unknown) {
   return msg;
 }
 
-const ALLOWED_STATUS = new Set(["Draft", "Ready to Send"]);
+const ALLOWED_STATUS = new Set(["Draft", "Publish"]);
+const ALLOWED_LIVE_STATUS = new Set(["Completed", "Sent"]);
 
 export async function updateDraftHarvestStatus(input: { recordId: string; status: string }) {
   try {
@@ -89,6 +90,27 @@ export async function updateLiveHarvestFields(input: {
     const base = getAirtableBase();
     const tableName = getHarvestsTableName();
     await base(tableName).update(input.recordId, fields as unknown as FieldSet);
+
+    revalidatePath("/");
+    return { ok: true as const };
+  } catch (err) {
+    return { ok: false as const, message: messageFromAirtable(err) };
+  }
+}
+
+export async function updateLiveHarvestStatus(input: { recordId: string; status: string }) {
+  try {
+    const status = input.status?.trim();
+    if (!input.recordId) throw new Error("Missing record id.");
+    if (!status) throw new Error("Missing status.");
+    if (!ALLOWED_LIVE_STATUS.has(status)) {
+      throw new Error("Invalid status for this action.");
+    }
+
+    const base = getAirtableBase();
+    const tableName = getHarvestsTableName();
+
+    await base(tableName).update(input.recordId, { Status: status } as unknown as FieldSet);
 
     revalidatePath("/");
     return { ok: true as const };

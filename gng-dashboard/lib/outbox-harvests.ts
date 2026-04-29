@@ -13,7 +13,7 @@ export async function listReadyOrSentHarvests(): Promise<DraftHarvestRow[]> {
 
   const records = await base(tableName)
     .select({
-      filterByFormula: "OR({Status} = 'Ready to Send', {Status} = 'Sent')",
+      filterByFormula: "OR({Status} = 'Publish', {Status} = 'Sent')",
       sort: [{ field: "Last Modified", direction: "desc" }],
     })
     .all();

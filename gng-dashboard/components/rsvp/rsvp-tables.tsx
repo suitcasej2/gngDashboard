@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ShareCsvButton } from "@/components/rsvp/shareable-table";
-import type { DeliveryRow, GiftRecipientRow, NonResponderRow } from "@/lib/rsvp-tables";
+import type { AllRsvpRow, DeliveryRow, GiftRecipientRow, NonResponderRow } from "@/lib/rsvp-tables";
 
 export function NeedsDeliveryTable({ rows }: { rows: DeliveryRow[] }) {
   const shareRows = rows.map((r) => ({
@@ -117,6 +117,40 @@ export function NonRespondersTable({ rows }: { rows: NonResponderRow[] }) {
           ))}
         </TableBody>
       </Table>
+    </div>
+  );
+}
+
+export function AllRsvpsTable({ rows }: { rows: AllRsvpRow[] }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          All RSVPs for harvests with linked Status = <span className="font-medium text-foreground">Sent</span>.
+        </p>
+        <p className="text-sm text-muted-foreground tabular-nums">{rows.length}</p>
+      </div>
+
+      <div className="w-full overflow-x-auto rounded-xl border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[220px]">Name</TableHead>
+              <TableHead className="min-w-[260px]">Email</TableHead>
+              <TableHead className="min-w-[160px]">Choice</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-medium">{r.name ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{r.email ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{r.choice ?? "—"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
