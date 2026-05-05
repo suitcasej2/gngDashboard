@@ -40,6 +40,18 @@ export type CreateHarvestInput = {
   status: HarvestStatus;
 };
 
+function formatTimeTo12hPdt(time24: string | undefined) {
+  if (!time24) return undefined;
+  const m = time24.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return time24;
+  const hh = Number(m[1]);
+  const mm = m[2];
+  if (!Number.isFinite(hh) || hh < 0 || hh > 23) return time24;
+  const ampm = hh >= 12 ? "PM" : "AM";
+  const h12 = hh % 12 === 0 ? 12 : hh % 12;
+  return `${h12}:${mm} ${ampm} PDT`;
+}
+
 function friendlyErrorMessage(err: unknown) {
   const msg =
     err instanceof Error
@@ -167,8 +179,8 @@ export async function createHarvest(input: CreateHarvestInput) {
       "Box Contents": input.boxContents?.trim() || undefined,
       "Text Me Number": input.textMeNumber?.trim() || undefined,
       "Start Date": input.startDate || undefined,
-      "Start Time": input.startTime || undefined,
-      "End Time": input.endTime || undefined,
+      "Start Time": formatTimeTo12hPdt(input.startTime),
+      "End Time": formatTimeTo12hPdt(input.endTime),
       "Featured Recipe Title": input.recipeTitle?.trim() || undefined,
       "Recipe URL": input.recipeUrl?.trim() || undefined,
       "Storage Tips": input.storageTips?.trim() || undefined,
@@ -258,8 +270,8 @@ export async function updateHarvest(
       "Text Me Number": input.textMeNumber?.trim() || "",
       "Start Date": input.startDate || "",
       "End Date": input.endDate || "",
-      "Start Time": input.startTime || "",
-      "End Time": input.endTime || "",
+      "Start Time": formatTimeTo12hPdt(input.startTime) || "",
+      "End Time": formatTimeTo12hPdt(input.endTime) || "",
       "Featured Recipe Title": input.recipeTitle?.trim() || "",
       "Recipe URL": input.recipeUrl?.trim() || "",
       "Storage Tips": input.storageTips?.trim() || "",
