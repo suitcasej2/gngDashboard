@@ -217,6 +217,14 @@ export default async function HomePage() {
               goodneighborgardens.com
             </a>
             <a
+              href="https://goodneighborgardens.slack.com/archives/C0AQJCUJRBQ"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-white/90 underline decoration-white/30 underline-offset-4 hover:text-white hover:decoration-white/70"
+            >
+              Slack
+            </a>
+            <a
               href="https://airtable.com/appmgTpf4jbMG2dip/tblXgO5kjGWZhIZcv/viw61Kth8sqoJaCpe"
               target="_blank"
               rel="noopener noreferrer"
