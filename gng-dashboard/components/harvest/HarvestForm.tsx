@@ -246,32 +246,6 @@ export function HarvestForm(props?: {
         </header>
 
         <div className="mt-6 space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Status</CardTitle>
-              <CardDescription>Draft now, publish when ready.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium">{status}</p>
-                <p className="text-xs text-muted-foreground">
-                  {status === "Published"
-                    ? "Visible as published in Airtable."
-                    : "Safe to save while you’re still editing."}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">Draft</span>
-                <Switch
-                  checked={status === "Published"}
-                  onCheckedChange={(checked) => setStatus(checked ? "Published" : "Draft")}
-                  aria-label="Draft / Published"
-                />
-                <span className="text-xs text-muted-foreground">Published</span>
-              </div>
-            </CardContent>
-          </Card>
-
           <UploadZone
             title="Harvest Box Image (Primary)"
             help="This is the main image people will see first."
@@ -522,6 +496,32 @@ export function HarvestForm(props?: {
               </AlertDescription>
             </Alert>
           ) : null}
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Status</CardTitle>
+              <CardDescription>Draft now, publish when ready.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">{status}</p>
+                <p className="text-xs text-muted-foreground">
+                  {status === "Published"
+                    ? "Visible as published in Airtable."
+                    : "Safe to save while you’re still editing."}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">Draft</span>
+                <Switch
+                  checked={status === "Published"}
+                  onCheckedChange={(checked) => setStatus(checked ? "Published" : "Draft")}
+                  aria-label="Draft / Published"
+                />
+                <span className="text-xs text-muted-foreground">Published</span>
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="sticky bottom-3 z-10">
             <Card className="border-primary/20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">

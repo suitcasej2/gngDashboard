@@ -10,9 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DraftHarvestsTable } from "@/components/harvest/draft-harvests-table";
 import { LiveHarvestsTable } from "@/components/harvest/live-harvests-table";
-import { RsvpChoiceChart } from "@/components/harvest/rsvp-choice-chart";
-import { AllRsvpsTable, GiftRecipientsTable, NeedsDeliveryTable, NonRespondersTable } from "@/components/rsvp/rsvp-tables";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LiveRsvpTabs } from "@/components/rsvp/live-rsvp-tabs";
 
 export const metadata: Metadata = {
   title: "CEO Harvest Dashboard",
@@ -193,59 +191,42 @@ export default async function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="live" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-                    <TabsTrigger value="live">Live RSVPs</TabsTrigger>
-                    <TabsTrigger value="delivery">Needs delivery</TabsTrigger>
-                    <TabsTrigger value="gifts">Gift recipients</TabsTrigger>
-                    <TabsTrigger value="nonresponders">Non responders</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="live" className="mt-4">
-                    {rsvpCounts.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No matching RSVPs found.</p>
-                    ) : (
-                      <RsvpChoiceChart data={rsvpCounts} />
-                    )}
-
-                    <div className="mt-6">
-                      {allRsvpRows.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No RSVPs found.</p>
-                      ) : (
-                        <AllRsvpsTable rows={allRsvpRows} />
-                      )}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="delivery" className="mt-4">
-                    {deliveryRows.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No delivery-needed RSVPs found.</p>
-                    ) : (
-                      <NeedsDeliveryTable rows={deliveryRows} />
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="gifts" className="mt-4">
-                    {giftRows.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No gift recipient RSVPs found.</p>
-                    ) : (
-                      <GiftRecipientsTable rows={giftRows} />
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="nonresponders" className="mt-4">
-                    {nonResponderRows.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No non-responders found.</p>
-                    ) : (
-                      <NonRespondersTable rows={nonResponderRows} />
-                    )}
-                  </TabsContent>
-                </Tabs>
+                <LiveRsvpTabs
+                  rsvpCounts={rsvpCounts}
+                  allRsvpRows={allRsvpRows}
+                  deliveryRows={deliveryRows}
+                  giftRows={giftRows}
+                  nonResponderRows={nonResponderRows}
+                />
               </CardContent>
             </Card>
           )}
         </div>
       </div>
+
+      <footer className="mt-10 border-t border-foreground/10 bg-[var(--brand-brown)]">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-white/85">Good Neighbor Gardens</p>
+          <div className="flex flex-wrap items-center gap-4 text-sm">
+            <a
+              href="https://goodneighborgardens.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-white/90 underline decoration-white/30 underline-offset-4 hover:text-white hover:decoration-white/70"
+            >
+              goodneighborgardens.com
+            </a>
+            <a
+              href="https://airtable.com/appmgTpf4jbMG2dip/tblXgO5kjGWZhIZcv/viw61Kth8sqoJaCpe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-white/90 underline decoration-white/30 underline-offset-4 hover:text-white hover:decoration-white/70"
+            >
+              Airtable
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
