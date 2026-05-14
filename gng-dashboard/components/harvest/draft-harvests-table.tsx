@@ -23,18 +23,92 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+type PendingStatusChange = {
+  recordId: string;
+  name: string;
+  from: string;
+  to: string;
+};
 
 export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
   const router = useRouter();
-  const [pending, start] = useTransition();
+  const [isPending, start] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<PendingStatusChange | null>(null);
 
   const valueForSelect = useMemo(() => {
-    return (status: string | null) => status && status.trim() ? status.trim() : "Draft";
+    return (status: string | null) => (status && status.trim() ? status.trim() : "Draft");
   }, []);
 
   return (
     <div className="space-y-3">
+      <Dialog
+        open={pendingStatus !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingStatus(null);
+        }}
+      >
+        <DialogContent showCloseButton className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change harvest status?</DialogTitle>
+            <DialogDescription>
+              {pendingStatus ? (
+                <>
+                  <span className="font-medium text-foreground">{pendingStatus.name}</span> will move
+                  from <span className="font-medium text-foreground">{pendingStatus.from}</span> to{" "}
+                  <span className="font-medium text-foreground">{pendingStatus.to}</span>. Only continue if
+                  this is intentional.
+                </>
+              ) : (
+                "\u00a0"
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="border-t-0 bg-transparent p-0 pt-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPendingStatus(null)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={isPending || !pendingStatus}
+              onClick={() => {
+                if (!pendingStatus) return;
+                const change = pendingStatus;
+                setPendingStatus(null);
+                setActionError(null);
+                start(async () => {
+                  const res = await updateDraftHarvestStatus({
+                    recordId: change.recordId,
+                    status: change.to,
+                  });
+                  if (!res.ok) {
+                    setActionError(res.message);
+                    return;
+                  }
+                  router.refresh();
+                });
+              }}
+            >
+              {isPending ? "Updating…" : "Yes, change status"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {actionError ? (
         <Alert variant="destructive">
           <AlertTitle>Action failed</AlertTitle>
@@ -62,17 +136,16 @@ export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                 <TableCell>
                   <Select
                     value={valueForSelect(r.status)}
-                    disabled={pending}
+                    disabled={isPending}
                     onValueChange={(next) => {
-                      if (next === valueForSelect(r.status)) return;
+                      const current = valueForSelect(r.status);
+                      if (next === current) return;
                       setActionError(null);
-                      start(async () => {
-                        const res = await updateDraftHarvestStatus({ recordId: r.id, status: next });
-                        if (!res.ok) {
-                          setActionError(res.message);
-                          return;
-                        }
-                        router.refresh();
+                      setPendingStatus({
+                        recordId: r.id,
+                        name: r.name,
+                        from: current,
+                        to: next,
                       });
                     }}
                   >
@@ -94,7 +167,7 @@ export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                         size="icon"
                         className="h-12 w-12"
                         aria-label={`Open actions for ${r.name}`}
-                        disabled={pending}
+                        disabled={isPending}
                       >
                         <MoreHorizontal className="size-5" />
                       </Button>
@@ -119,6 +192,7 @@ export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                             router.refresh();
                           });
                         }}
+                        disabled={isPending}
                       >
                         Delete
                       </DropdownMenuItem>

@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DraftHarvestsTable } from "@/components/harvest/draft-harvests-table";
 import { LiveHarvestsTable } from "@/components/harvest/live-harvests-table";
 import { LiveRsvpTabs } from "@/components/rsvp/live-rsvp-tabs";
+import { DashboardRefreshButton } from "@/components/dashboard-refresh-button";
 
 export const metadata: Metadata = {
   title: "CEO Harvest Dashboard",
@@ -88,17 +89,21 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="hidden sm:block">
-              <Button asChild className="h-12 px-6 text-base">
-                <Link href="/publish">Publish a new Harvest</Link>
-              </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              <DashboardRefreshButton className="h-12 px-3 sm:px-4" />
+              <div className="hidden sm:block">
+                <Button asChild className="h-12 px-6 text-base">
+                  <Link href="/publish">Publish a new Harvest</Link>
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div className="mt-4 sm:hidden">
+          <div className="mt-4 flex gap-2 sm:hidden">
+            <DashboardRefreshButton className="h-14 w-14 shrink-0 rounded-2xl px-0" />
             <Button
               asChild
-              className="h-14 w-full rounded-2xl border-2 border-foreground/15 bg-primary text-primary-foreground shadow-sm"
+              className="h-14 min-w-0 flex-1 rounded-2xl border-2 border-foreground/15 bg-primary text-primary-foreground shadow-sm"
             >
               <Link href="/publish">Publish a new Harvest</Link>
             </Button>
