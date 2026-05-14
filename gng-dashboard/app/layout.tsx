@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
+import { PWA_SPLASH_BACKGROUND } from "@/lib/pwa-splash";
 import "./globals.css";
 
 const highwayGothic = localFont({
@@ -37,10 +38,15 @@ export const metadata: Metadata = {
     title: "GNG Harvest",
     statusBarStyle: "default",
   },
+  /** iOS still keys some standalone / splash behavior off this legacy meta. */
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#56BB55",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -52,6 +58,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${highwayGothic.variable} ${geistMono.variable} h-full antialiased`}
+      style={{ backgroundColor: PWA_SPLASH_BACKGROUND }}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

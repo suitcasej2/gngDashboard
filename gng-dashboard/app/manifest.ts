@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { PWA_SPLASH_BACKGROUND } from "@/lib/pwa-splash";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -9,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#ffffff",
+    background_color: PWA_SPLASH_BACKGROUND,
     theme_color: "#56BB55",
     icons: [
       {
