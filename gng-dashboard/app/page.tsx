@@ -89,13 +89,11 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="hidden shrink-0 items-center gap-2 sm:flex">
               <DashboardRefreshButton className="h-12 px-3 sm:px-4" />
-              <div className="hidden sm:block">
-                <Button asChild className="h-12 px-6 text-base">
-                  <Link href="/publish">Publish a new Harvest</Link>
-                </Button>
-              </div>
+              <Button asChild className="h-12 px-6 text-base">
+                <Link href="/publish">Publish a new Harvest</Link>
+              </Button>
             </div>
           </div>
 
