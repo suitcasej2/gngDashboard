@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# Separate app with its own `.git`; ignore here so this repo stays dashboard-only
+gng-confirmations/
