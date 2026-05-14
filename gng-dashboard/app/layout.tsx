@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -28,6 +28,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CEO Harvest Dashboard",
   description: "Mobile-first CEO console for draft harvests and publishing",
+  icons: {
+    icon: [{ url: "/AppIcon.png", sizes: "540x540", type: "image/png" }],
+    apple: [{ url: "/AppIcon.png", sizes: "540x540", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "GNG Harvest",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#56BB55",
 };
 
 export default function RootLayout({
