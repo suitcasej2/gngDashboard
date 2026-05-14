@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     orientation: "portrait",
     background_color: PWA_SPLASH_BACKGROUND,
-    theme_color: "#56BB55",
+    theme_color: PWA_SPLASH_BACKGROUND,
     icons: [
       {
         src: "/AppIcon.png",
