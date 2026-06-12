@@ -2,6 +2,7 @@
 
 import { put } from "@vercel/blob";
 import { getAirtableBase, getHarvestNameField, getHarvestsTableName } from "@/lib/airtable";
+import { notifyNewHarvest } from "@/lib/push-notifications";
 import type { FieldSet } from "airtable";
 
 export type HarvestStatus = "Draft" | "Published";
@@ -235,6 +236,10 @@ export async function createHarvest(input: CreateHarvestInput) {
       } else {
         throw firstErr;
       }
+    }
+
+    if (input.status === "Published" && record?.id) {
+      void notifyNewHarvest(input.harvestName.trim());
     }
 
     return { ok: true as const, recordId: record?.id as string | undefined };

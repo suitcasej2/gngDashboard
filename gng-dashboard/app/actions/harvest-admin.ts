@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { getAirtableBase, getHarvestsTableName } from "@/lib/airtable";
+import { getHarvestNameFromAirtableFields, getLongTextField } from "@/lib/harvest-display";
+import { notifyCeoMessage, notifyNewHarvest } from "@/lib/push-notifications";
 import type { FieldSet } from "airtable";
 
 function messageFromAirtable(err: unknown) {
@@ -36,7 +38,15 @@ export async function updateDraftHarvestStatus(input: { recordId: string; status
     const base = getAirtableBase();
     const tableName = getHarvestsTableName();
 
-    await base(tableName).update(input.recordId, { Status: status } as unknown as FieldSet);
+    const record = await base(tableName).update(input.recordId, {
+      Status: status,
+    } as unknown as FieldSet);
+
+    if (status === "Publish") {
+      const fields = (record.fields || {}) as Record<string, unknown>;
+      const harvestName = getHarvestNameFromAirtableFields(fields);
+      void notifyNewHarvest(harvestName);
+    }
 
     revalidatePath("/");
     return { ok: true as const };
@@ -89,7 +99,21 @@ export async function updateLiveHarvestFields(input: {
 
     const base = getAirtableBase();
     const tableName = getHarvestsTableName();
-    await base(tableName).update(input.recordId, fields as unknown as FieldSet);
+    const record = await base(tableName).update(
+      input.recordId,
+      fields as unknown as FieldSet
+    );
+
+    if (input.sendUpdateNow === true) {
+      const recordFields = (record.fields || {}) as Record<string, unknown>;
+      const urgent =
+        input.urgentUpdate?.trim() ||
+        getLongTextField(recordFields, "Urgent Update") ||
+        "";
+      if (urgent) {
+        void notifyCeoMessage(urgent);
+      }
+    }
 
     revalidatePath("/");
     return { ok: true as const };
