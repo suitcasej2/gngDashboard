@@ -33,6 +33,12 @@ export async function listVisibleHarvests(): Promise<Harvest[]> {
   return listSubscriberHarvestRecords();
 }
 
+/** Most recent completed harvest — community photos open after harvest wraps up. */
+export async function getLatestCompletedHarvest(): Promise<Harvest | null> {
+  const harvests = await listVisibleHarvests();
+  return harvests.find((harvest) => harvest.status === "Completed") ?? null;
+}
+
 export async function getCurrentPublishedHarvest(): Promise<Harvest | null> {
   const base = getAirtableBase();
   const tableName = getHarvestsTableName();

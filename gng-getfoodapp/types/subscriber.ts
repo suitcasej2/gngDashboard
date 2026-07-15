@@ -16,6 +16,8 @@ export type Subscriber = {
   subscriptionStartDate: string | null;
   firstHarvestReceived: string | null;
   rsvpCount: number;
+  /** Boxes from years before this portal/Airtable base (optional backfill field). */
+  lifetimeBoxCount: number;
   bankedBoxes: number;
   bankedBoxCount: number;
   giftLog: string;

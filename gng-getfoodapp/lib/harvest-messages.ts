@@ -8,7 +8,7 @@ import {
 } from "@/lib/airtable";
 import { getLinkedRecordIds } from "@/lib/airtable-fields";
 import { mapMessageRecord } from "@/lib/airtable-mappers";
-import { notifyCeoMessage } from "@/lib/push-notifications";
+import { notifyCeoMessage, type PushSendResult } from "@/lib/push-notifications";
 import { getSubscriberAvatarsByIds } from "@/lib/subscriber";
 import type { HarvestMessage } from "@/types/message";
 
@@ -62,6 +62,13 @@ export async function listMessagesForHarvest(
   return enrichMessagesWithAvatars(messages);
 }
 
+export async function listStaffMessagesForHarvest(
+  harvestId: string
+): Promise<HarvestMessage[]> {
+  const messages = await listMessagesForHarvest(harvestId);
+  return messages.filter((message) => message.isStaff);
+}
+
 export async function postHarvestMessage(input: {
   harvestId: string;
   subscriberId: string;
@@ -90,14 +97,16 @@ export async function postHarvestMessage(input: {
   return message;
 }
 
-/** For future CEO dashboard integration — staff posts into the same thread. */
+/** Staff posts into the harvest chat (admin dashboard). */
 export async function postStaffHarvestMessage(input: {
   harvestId: string;
   body: string;
-}): Promise<HarvestMessage> {
+  staffSubscriberId: string;
+}): Promise<{ message: HarvestMessage; push: PushSendResult }> {
   const base = getAirtableBase();
   const tableName = getHarvestMessagesTableName();
   const harvestLink = getMessageHarvestLinkField();
+  const subscriberLink = getMessageSubscriberLinkField();
   const messageField = getMessageBodyField();
 
   const body = input.body.trim();
@@ -105,13 +114,18 @@ export async function postStaffHarvestMessage(input: {
   const record = await base(tableName).create({
     [messageField]: body,
     [harvestLink]: [input.harvestId],
+    [subscriberLink]: [input.staffSubscriberId],
   });
 
-  void notifyCeoMessage(body);
+  const [message] = await enrichMessagesWithAvatars([
+    mapMessageRecord({
+      id: record.id,
+      fields: (record.fields || {}) as Record<string, unknown>,
+      createdTime: record._rawJson.createdTime,
+    }),
+  ]);
 
-  return mapMessageRecord({
-    id: record.id,
-    fields: (record.fields || {}) as Record<string, unknown>,
-    createdTime: record._rawJson.createdTime,
-  });
+  const push = await notifyCeoMessage(body, input.harvestId, message.id);
+
+  return { message, push };
 }

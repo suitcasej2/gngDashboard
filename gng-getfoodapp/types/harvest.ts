@@ -6,6 +6,7 @@ export type Harvest = {
   name: string;
   description: string;
   pickupLocation: string;
+  textMeNumber: string;
   boxContents: string;
   startDate: string | null;
   endDate: string | null;

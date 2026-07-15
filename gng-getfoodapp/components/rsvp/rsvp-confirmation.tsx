@@ -1,8 +1,9 @@
-import Image from "next/image";
-import Link from "next/link";
+"use client";
 
-import { RsvpConfetti } from "@/components/rsvp/rsvp-confetti";
+import Image from "next/image";
+import { NavLink } from "@/components/layout/nav-link";
 import { MenuButton } from "@/components/layout/side-nav";
+import { RsvpConfetti } from "@/components/rsvp/rsvp-confetti";
 import { formatHarvestDateRange } from "@/lib/format";
 import {
   rsvpConfirmationMessage,
@@ -75,11 +76,28 @@ export function RsvpConfirmation({
             {harvest.name}
           </p>
           <p className="mt-1 text-base font-medium text-[#4a3728]">{when}</p>
-          {harvest.pickupLocation ? (
-            <p className="mt-3 text-sm text-[#5c4a3d]">
-              <span className="font-medium text-[#2a1f12]">Pickup: </span>
-              {harvest.pickupLocation}
-            </p>
+          {harvest.pickupLocation || harvest.textMeNumber ? (
+            <div className="mt-3 space-y-1 text-sm text-[#5c4a3d]">
+              {harvest.pickupLocation ? (
+                <p>
+                  <span className="font-medium text-[#2a1f12]">Pickup: </span>
+                  {harvest.pickupLocation}
+                </p>
+              ) : null}
+              {harvest.textMeNumber ? (
+                <p>
+                  <span className="font-medium text-[#2a1f12]">
+                    Text me at this number:{" "}
+                  </span>
+                  <a
+                    href={`tel:${harvest.textMeNumber.replace(/[^\d+]/g, "")}`}
+                    className="text-[#2a1f12] underline-offset-4 hover:underline"
+                  >
+                    {harvest.textMeNumber}
+                  </a>
+                </p>
+              ) : null}
+            </div>
           ) : null}
           {harvest.description ? (
             <p className="mt-3 text-sm leading-relaxed text-[#4a3728]">
@@ -93,14 +111,10 @@ export function RsvpConfirmation({
             asChild
             className="h-12 flex-1 bg-[var(--brand-green)] text-white hover:bg-[color-mix(in_oklab,var(--brand-green),white_10%)]"
           >
-            <Link href="/" prefetch={false}>
-              Back to home
-            </Link>
+            <NavLink href="/">Back to home</NavLink>
           </Button>
           <Button asChild variant="outline" className="h-12 flex-1">
-            <Link href="/harvest" prefetch={false}>
-              All harvests
-            </Link>
+            <NavLink href="/harvest">All harvests</NavLink>
           </Button>
         </div>
       </div>

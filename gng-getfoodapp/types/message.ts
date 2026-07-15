@@ -4,7 +4,7 @@
  * - Harvest (link → Harvests)
  * - Subscriber (link → Subscribers, optional for staff)
  * - Full Name (from Subscriber) (lookup)
- * - Staff posts omit Subscriber link → shown as GNG Team
+ * - Staff posts link the admin's Subscriber record; name comes from lookup
  * - Created (created time)
  */
 export type HarvestMessage = {

@@ -1,56 +1,32 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import OneSignal from "react-onesignal";
 
-const APP_ID = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
-
-async function linkSubscriberToOneSignal(subscriber: {
-  id: string;
-  email: string;
-}) {
-  await OneSignal.login(subscriber.id);
-  await OneSignal.User.addTags({
-    role: "subscriber",
-    active: "true",
-  });
-  await OneSignal.User.addEmail(subscriber.email);
-}
+import {
+  ensureOneSignalInitialized,
+  getOneSignalUnavailableMessage,
+  isOneSignalConfigured,
+  linkSubscriberToOneSignal,
+} from "@/lib/onesignal-client";
 
 export function OneSignalProvider() {
-  const initialized = useRef(false);
+  const linked = useRef(false);
 
   useEffect(() => {
-    if (!APP_ID || initialized.current) return;
-    initialized.current = true;
+    if (!isOneSignalConfigured()) return;
+
+    const unavailable = getOneSignalUnavailableMessage();
+    if (unavailable) return;
 
     let cancelled = false;
 
     async function setup() {
-      await OneSignal.init({
-        appId: APP_ID!,
-        allowLocalhostAsSecureOrigin: true,
-        serviceWorkerPath: "/OneSignalSDKWorker.js",
-        promptOptions: {
-          slidedown: {
-            prompts: [
-              {
-                type: "push",
-                autoPrompt: false,
-                text: {
-                  actionMessage:
-                    "Get notified when a new harvest is published or GNG sends an update.",
-                  acceptButton: "Allow",
-                  cancelButton: "Not now",
-                },
-                delay: { pageViews: 1, timeDelay: 12 },
-              },
-            ],
-          },
-        },
-      });
-
-      if (cancelled) return;
+      try {
+        await ensureOneSignalInitialized();
+      } catch {
+        return;
+      }
+      if (cancelled || linked.current) return;
 
       try {
         const res = await fetch("/api/session", { cache: "no-store" });
@@ -60,9 +36,10 @@ export function OneSignalProvider() {
         };
         if (json.subscriber) {
           await linkSubscriberToOneSignal(json.subscriber);
+          linked.current = true;
         }
       } catch {
-        // Session lookup can fail during dev reloads — push will retry on next visit.
+        // Session lookup can fail during dev reloads.
       }
     }
 

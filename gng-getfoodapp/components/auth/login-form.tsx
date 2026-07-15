@@ -28,7 +28,9 @@ export function LoginForm() {
         setError(result.message);
         return;
       }
-      router.replace(next);
+      const destination =
+        next === "/" || next === "/login" ? result.redirectTo : next;
+      router.replace(destination);
       router.refresh();
     });
   }
@@ -36,9 +38,10 @@ export function LoginForm() {
   return (
     <Card className="rounded-2xl border-[#FFF904]/35 bg-background/70 backdrop-blur ring-1 ring-foreground/5">
       <CardHeader>
-        <CardTitle>Subscriber sign in</CardTitle>
+        <CardTitle>Sign in</CardTitle>
         <CardDescription>
-          Enter the email on your active GNG subscription.
+          Enter your GNG email. Admins setting up Face ID will continue to
+          enrollment after sign-in.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

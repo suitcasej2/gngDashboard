@@ -66,6 +66,16 @@ export function getNumberField(
   return 0;
 }
 
+/** Prefer editable "Banked Boxes"; fall back to legacy "Banked Box Count". */
+export function getBankedBoxCount(
+  fields: Record<string, unknown> | null | undefined
+): number {
+  if (getField(fields, "Banked Boxes") !== undefined) {
+    return getNumberField(fields, "Banked Boxes");
+  }
+  return getNumberField(fields, "Banked Box Count");
+}
+
 export function getDateField(
   fields: Record<string, unknown> | null | undefined,
   name: string

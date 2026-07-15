@@ -8,7 +8,6 @@ import { updateSubscriberProfile } from "@/lib/subscriber";
 export async function updateProfileAction(input: {
   phone: string;
   address: string;
-  deliveryPreference: string;
 }) {
   const subscriber = await getSessionSubscriber();
   if (!subscriber) {
@@ -23,7 +22,7 @@ export async function updateProfileAction(input: {
     const updated = await updateSubscriberProfile(subscriber.id, {
       phone: input.phone.trim(),
       address: input.address.trim(),
-      deliveryPreference: input.deliveryPreference.trim(),
+      deliveryPreference: subscriber.deliveryPreference,
     });
 
     if (!updated) {

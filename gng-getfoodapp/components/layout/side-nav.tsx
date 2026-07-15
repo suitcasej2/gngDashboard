@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, Menu, X } from "lucide-react";
@@ -15,7 +14,8 @@ import {
 } from "react";
 
 import { logoutAction } from "@/app/actions/auth";
-import { isNavActive, NAV_ITEMS } from "@/components/layout/nav-config";
+import { ADMIN_NAV_ITEM, isNavActive, NAV_ITEMS } from "@/components/layout/nav-config";
+import { NavLink } from "@/components/layout/nav-link";
 import { cn } from "@/lib/utils";
 
 type SideNavContextValue = {
@@ -25,8 +25,12 @@ type SideNavContextValue = {
 
 const SideNavContext = createContext<SideNavContextValue | null>(null);
 
+function useSideNavContext() {
+  return useContext(SideNavContext);
+}
+
 export function useSideNav() {
-  const ctx = useContext(SideNavContext);
+  const ctx = useSideNavContext();
   if (!ctx) throw new Error("useSideNav must be used within SideNavProvider");
   return ctx;
 }
@@ -35,30 +39,35 @@ function NavLinks({
   pathname,
   onNavigate,
   className,
+  showAdminLink = false,
 }: {
   pathname: string;
   onNavigate?: () => void;
   className?: string;
+  showAdminLink?: boolean;
 }) {
+  const items = showAdminLink ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS;
+
   return (
     <nav className={cn("space-y-1", className)}>
-      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, label, icon: Icon }) => {
         const active = isNavActive(pathname, href);
         return (
-          <Link
+          <NavLink
             key={href}
             href={href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors duration-150",
               active
                 ? "bg-primary/15 text-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
+            isActive={active}
           >
             <Icon className="size-5 shrink-0" />
             {label}
-          </Link>
+          </NavLink>
         );
       })}
     </nav>
@@ -85,9 +94,31 @@ function SignOutButton({
   );
 }
 
+function useIsAdmin() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/session", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data: { isAdmin?: boolean }) => {
+        if (!cancelled) setIsAdmin(Boolean(data.isAdmin));
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return isAdmin;
+}
+
 function DesktopSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const isAdmin = useIsAdmin();
   const [isPending, startTransition] = useTransition();
 
   function handleLogout() {
@@ -109,7 +140,7 @@ function DesktopSidebar() {
       </div>
 
       <div className="flex flex-1 flex-col px-3 py-4">
-        <NavLinks pathname={pathname} className="flex-1" />
+        <NavLinks pathname={pathname} className="flex-1" showAdminLink={isAdmin} />
         <div className="border-t pt-3">
           <SignOutButton onSignOut={handleLogout} disabled={isPending} />
         </div>
@@ -127,6 +158,7 @@ function MobileSideNavDrawer({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isAdmin = useIsAdmin();
   const [isPending, startTransition] = useTransition();
 
   function handleLogout() {
@@ -142,7 +174,7 @@ function MobileSideNavDrawer({
     <>
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 lg:hidden",
+          "fixed inset-0 z-50 bg-black/40 transition-opacity duration-200 lg:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0"
         )}
         onClick={() => onOpenChange(false)}
@@ -150,7 +182,7 @@ function MobileSideNavDrawer({
       />
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,82vw)] flex-col bg-background shadow-2xl transition-transform duration-300 ease-out lg:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,82vw)] flex-col bg-background shadow-2xl transition-transform duration-200 ease-out will-change-transform lg:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
         aria-hidden={!open}
@@ -175,6 +207,7 @@ function MobileSideNavDrawer({
             pathname={pathname}
             onNavigate={() => onOpenChange(false)}
             className="flex-1"
+            showAdminLink={isAdmin}
           />
           <div className="border-t pt-3">
             <SignOutButton onSignOut={handleLogout} disabled={isPending} />
@@ -275,7 +308,10 @@ export function MenuButton({
   className?: string;
   variant?: "default" | "overlay";
 }) {
-  const { setOpen } = useSideNav();
+  const ctx = useSideNavContext();
+  if (!ctx) return null;
+
+  const { setOpen } = ctx;
 
   return (
     <button

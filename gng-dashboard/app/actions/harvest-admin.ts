@@ -111,7 +111,7 @@ export async function updateLiveHarvestFields(input: {
         getLongTextField(recordFields, "Urgent Update") ||
         "";
       if (urgent) {
-        void notifyCeoMessage(urgent);
+        void notifyCeoMessage(urgent, input.recordId);
       }
     }
 

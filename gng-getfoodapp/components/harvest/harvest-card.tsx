@@ -1,6 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Calendar, MessageCircle } from "lucide-react";
+
+import { NavLink } from "@/components/layout/nav-link";
 
 import { HarvestDetails } from "@/components/harvest/harvest-details";
 import { RsvpCta } from "@/components/harvest/rsvp-cta";
@@ -89,10 +90,10 @@ export function HarvestCard({
 
         {showChatLink && (
           <Button asChild variant="outline" className="h-11 w-full rounded-xl">
-            <Link href={`/harvest/${harvest.id}/chat`} prefetch={false}>
+            <NavLink href={`/harvest/${harvest.id}/chat`}>
               <MessageCircle className="size-4" />
               Open harvest chat
-            </Link>
+            </NavLink>
           </Button>
         )}
       </div>

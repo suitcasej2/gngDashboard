@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUp } from "lucide-react";
 import type { HarvestMessage } from "@/types/message";
 import { formatMessageTime } from "@/lib/format";
@@ -84,6 +84,7 @@ export function MessageThread({
   currentSubscriberAvatarUrl,
   embedded = false,
   scrollContainerId,
+  highlightMessageId,
 }: {
   harvestId: string;
   initialMessages: HarvestMessage[];
@@ -94,12 +95,33 @@ export function MessageThread({
   embedded?: boolean;
   /** Element id of scroll parent on desktop (e.g. home right panel) */
   scrollContainerId?: string;
+  /** Scroll to and briefly highlight a message (from notifications deep link) */
+  highlightMessageId?: string | null;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const scrolledToHighlight = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!highlightMessageId) {
+      scrolledToHighlight.current = null;
+      return;
+    }
+    if (scrolledToHighlight.current === highlightMessageId) return;
+
+    const element = document.getElementById(`message-${highlightMessageId}`);
+    if (!element) return;
+
+    scrolledToHighlight.current = highlightMessageId;
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+    setHighlightedId(highlightMessageId);
+    const timer = window.setTimeout(() => setHighlightedId(null), 2400);
+    return () => window.clearTimeout(timer);
+  }, [highlightMessageId, messages]);
 
   const getScrollPosition = useCallback(() => {
     if (embedded && scrollContainerId) {
@@ -240,13 +262,18 @@ export function MessageThread({
         ) : (
           messages.map((message) => {
             const isOwn = message.subscriberId === currentSubscriberId;
-            const displayName = isOwn ? "You" : message.authorName;
+            const displayName = isOwn
+              ? "You"
+              : message.isStaff
+                ? (message.authorName.trim().split(/\s+/)[0] ?? message.authorName)
+                : message.authorName;
 
             return (
               <div
                 key={message.id}
+                id={`message-${message.id}`}
                 className={cn(
-                  "flex max-w-[92%] items-end gap-2",
+                  "flex max-w-[92%] items-end gap-2 scroll-mt-24",
                   isOwn ? "ml-auto" : "mr-auto"
                 )}
               >
@@ -258,23 +285,20 @@ export function MessageThread({
                 />
                 <div
                   className={cn(
-                    "min-w-0 flex-1 rounded-2xl px-3 py-2 text-sm",
+                    "min-w-0 flex-1 rounded-2xl px-3 py-2 text-sm transition-shadow",
                     message.isStaff
                       ? "border border-[#FFF904]/40 bg-[#FFF904]/15"
                       : isOwn
                         ? "bg-primary/15"
-                        : "bg-muted"
+                        : "bg-muted",
+                    highlightedId === message.id &&
+                      "ring-2 ring-[#FFF904] ring-offset-2 ring-offset-background"
                   )}
                 >
                   <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span className="font-medium text-foreground">
                       {displayName}
                     </span>
-                    {message.isStaff && (
-                      <span className="rounded bg-[#FFF904]/50 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase">
-                        GNG
-                      </span>
-                    )}
                     <span>{formatMessageTime(message.createdAt)}</span>
                   </div>
                   <p className="whitespace-pre-wrap">{message.body}</p>

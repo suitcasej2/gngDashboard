@@ -11,6 +11,24 @@ export function isActiveSubscriber(subscriber: Subscriber): boolean {
   return subscriber.subscriptionStatus === "Active";
 }
 
+export async function listActiveSubscribers(): Promise<Subscriber[]> {
+  const base = getAirtableBase();
+  const tableName = getSubscribersTableName();
+
+  const records = await base(tableName)
+    .select({
+      filterByFormula: `{Subscription Status} = 'Active'`,
+    })
+    .all();
+
+  return records.map((record) =>
+    mapSubscriberRecord({
+      id: record.id,
+      fields: (record.fields || {}) as Record<string, unknown>,
+    })
+  );
+}
+
 export async function findSubscriberByEmail(
   email: string
 ): Promise<Subscriber | null> {

@@ -51,12 +51,25 @@ export function HarvestDetails({
       )}
 
       <div className="space-y-3 border-t border-border/60 pt-4 text-sm">
-        {harvest.pickupLocation && (
+        {(harvest.pickupLocation || harvest.textMeNumber) && (
           <div className="flex gap-3">
             <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <div>
               <p className="font-medium">Pickup</p>
-              <p className="text-muted-foreground">{harvest.pickupLocation}</p>
+              {harvest.pickupLocation ? (
+                <p className="text-muted-foreground">{harvest.pickupLocation}</p>
+              ) : null}
+              {harvest.textMeNumber ? (
+                <p className={harvest.pickupLocation ? "mt-1" : ""}>
+                  <span className="text-muted-foreground">Text me at this number: </span>
+                  <a
+                    href={`tel:${harvest.textMeNumber.replace(/[^\d+]/g, "")}`}
+                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                  >
+                    {harvest.textMeNumber}
+                  </a>
+                </p>
+              ) : null}
             </div>
           </div>
         )}

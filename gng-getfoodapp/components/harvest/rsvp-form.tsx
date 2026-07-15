@@ -128,14 +128,19 @@ export function RsvpForm({
         </div>
       )}
 
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex items-start gap-3 text-sm leading-relaxed">
         <input
           type="checkbox"
           checked={needsDelivery}
           onChange={(e) => setNeedsDelivery(e.target.checked)}
-          className="size-4 rounded border-input"
+          className="mt-0.5 size-4 shrink-0 rounded border-input"
         />
-        I need home delivery
+        <span>
+          If you have a disability, mobility limitation, or are experiencing hardship
+          that affects how you can receive your box, check this box and we&apos;ll do
+          our best to accommodate you. We&apos;re committed to making the Get Food
+          Harvest Box accessible to everyone.
+        </span>
       </label>
 
       {needsDelivery && (

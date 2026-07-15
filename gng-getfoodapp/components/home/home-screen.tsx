@@ -1,57 +1,59 @@
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight, Check, Gift } from "lucide-react";
+"use client";
 
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+
+import { BrandLogo } from "@/components/brand-logo";
+import { SubscriberImpactStatsGrid } from "@/components/impact/subscriber-impact-stats";
 import { HarvestDetails, HarvestDetailsHeader } from "@/components/harvest/harvest-details";
+import { HarvestRsvpRoster } from "@/components/home/harvest-rsvp-roster";
 import { HomeEmbeddedChat } from "@/components/home/home-embedded-chat";
 import { MenuButton } from "@/components/layout/side-nav";
+import { NavLink } from "@/components/layout/nav-link";
 import { formatHarvestDateRange } from "@/lib/format";
 import { rsvpChoiceLabel, subscriberHasRsvp } from "@/lib/rsvp-choices";
 import { cn } from "@/lib/utils";
 import type { Harvest } from "@/types/harvest";
-import type { HarvestRsvp } from "@/types/rsvp";
+import type { HarvestRsvp, HarvestRsvpParticipant } from "@/types/rsvp";
 import type { Subscriber } from "@/types/subscriber";
-
-function impactLevel(rsvpCount: number): string {
-  if (rsvpCount >= 16) return "Harvest hero";
-  if (rsvpCount >= 6) return "Regular";
-  return "New member";
-}
 
 function HomeActions({
   subscriber,
   harvest,
   rsvp,
   chatOpen,
+  rsvpParticipants,
+  highlightMessageId,
 }: {
   subscriber: Subscriber;
   harvest: Harvest | null;
   rsvp: HarvestRsvp | null;
   chatOpen: boolean;
+  rsvpParticipants: HarvestRsvpParticipant[];
+  highlightMessageId?: string | null;
 }) {
   const hasRsvp = subscriberHasRsvp(rsvp);
 
   return (
     <section className="flex flex-1 flex-col bg-background px-4 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-4 lg:px-10 lg:py-8 xl:px-14">
       <div className="mb-5 flex shrink-0 items-center justify-between rounded-2xl bg-background px-1 py-2 lg:mb-6">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Gift className="size-4 text-primary" />
-          <span>Good Neighbor Gardens</span>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium text-foreground">
-          <Check className="size-3.5" />
-          {impactLevel(subscriber.rsvpCount)}
-        </span>
+        <BrandLogo size={68} />
+        {harvest ? (
+          <HarvestRsvpRoster
+            harvestName={harvest.name}
+            participants={rsvpParticipants}
+          />
+        ) : null}
       </div>
 
       {harvest ? (
         <div className="space-y-4 lg:max-w-md">
           <HarvestDetailsHeader harvest={harvest} />
 
-          <Link
+          <NavLink
             href="/harvest/rsvp"
             className={cn(
-              "group flex h-16 items-center justify-between rounded-full px-6 text-white shadow-lg transition-transform active:scale-[0.98] lg:h-[4.25rem] lg:px-8",
+              "group flex h-16 items-center justify-between rounded-full px-6 text-white shadow-lg active:scale-[0.98] lg:h-[4.25rem] lg:px-8",
               hasRsvp
                 ? "bg-[var(--brand-brown)] hover:bg-[color-mix(in_oklab,var(--brand-brown),white_8%)]"
                 : "bg-[var(--brand-green)] hover:bg-[color-mix(in_oklab,var(--brand-green),white_10%)]"
@@ -63,7 +65,7 @@ function HomeActions({
             <span className="flex size-10 items-center justify-center rounded-full bg-white/15 lg:size-11">
               <ArrowRight className="size-5" />
             </span>
-          </Link>
+          </NavLink>
 
           <p className="text-center text-xs text-muted-foreground lg:text-left">
             You chose:{" "}
@@ -72,6 +74,8 @@ function HomeActions({
             </span>
           </p>
 
+          <SubscriberImpactStatsGrid subscriber={subscriber} />
+
           <HarvestDetails harvest={harvest} />
 
           <HomeEmbeddedChat
@@ -79,11 +83,15 @@ function HomeActions({
             chatOpen={chatOpen}
             currentSubscriberId={subscriber.id}
             currentSubscriberAvatarUrl={subscriber.avatarUrl}
+            highlightMessageId={highlightMessageId}
           />
         </div>
       ) : (
-        <div className="rounded-2xl border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground lg:max-w-md lg:text-left">
-          No published harvest right now. Check back soon.
+        <div className="space-y-4 lg:max-w-md">
+          <div className="rounded-2xl border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground lg:text-left">
+            No published harvest right now. Check back soon.
+          </div>
+          <SubscriberImpactStatsGrid subscriber={subscriber} />
         </div>
       )}
     </section>
@@ -95,11 +103,15 @@ export function HomeScreen({
   harvest,
   rsvp,
   chatOpen,
+  rsvpParticipants,
+  highlightMessageId,
 }: {
   subscriber: Subscriber;
   harvest: Harvest | null;
   rsvp: HarvestRsvp | null;
   chatOpen: boolean;
+  rsvpParticipants: HarvestRsvpParticipant[];
+  highlightMessageId?: string | null;
 }) {
   const firstName = subscriber.fullName.split(" ")[0]?.toUpperCase() ?? "FRIEND";
   const pickupLabel = harvest
@@ -154,6 +166,8 @@ export function HomeScreen({
           harvest={harvest}
           rsvp={rsvp}
           chatOpen={chatOpen}
+          rsvpParticipants={rsvpParticipants}
+          highlightMessageId={highlightMessageId}
         />
       </div>
     </div>

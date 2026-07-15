@@ -2,9 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
-import OneSignal from "react-onesignal";
 
-import { Button } from "@/components/ui/button";
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+  getBravePushHelpMessage,
+  getOneSignalUnavailableMessage,
+  getPushSubscriptionState,
+  isBraveBrowserAsync,
+  isOneSignalAvailable,
+  isOneSignalConfigured,
+  onPushSubscriptionChange,
+} from "@/lib/onesignal-client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
@@ -12,62 +22,125 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-const APP_ID = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
+import { Switch } from "@/components/ui/switch";
 
 export function PushSettings() {
   const [supported, setSupported] = useState<boolean | null>(null);
   const [optedIn, setOptedIn] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [braveHelp, setBraveHelp] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!APP_ID) return;
+    if (!isOneSignalAvailable()) return;
+
+    let cancelled = false;
+
+    void isBraveBrowserAsync().then((isBrave) => {
+      if (!cancelled && isBrave) {
+        setBraveHelp(getBravePushHelpMessage());
+      }
+    });
+
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      setSupported(false);
+      setOptedIn(false);
+      setError(
+        "Push notifications are taking too long to load. Refresh the page or check for ad blockers."
+      );
+    }, 22_000);
 
     async function readState() {
       try {
-        setSupported(OneSignal.Notifications.isPushSupported());
-        setOptedIn(Boolean(OneSignal.User.PushSubscription.optedIn));
-      } catch {
-        setSupported(false);
-        setOptedIn(false);
+        const state = await getPushSubscriptionState();
+        if (!cancelled) {
+          window.clearTimeout(timeoutId);
+          setSupported(state.supported);
+          setOptedIn(state.optedIn);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          window.clearTimeout(timeoutId);
+          setSupported(false);
+          setOptedIn(false);
+          setError(
+            e instanceof Error
+              ? e.message
+              : "Could not initialize push notifications."
+          );
+        }
       }
     }
 
-    const timer = window.setTimeout(() => {
-      void readState();
-    }, 800);
+    void readState();
 
-    return () => window.clearTimeout(timer);
+    const unsubscribe = onPushSubscriptionChange((next) => {
+      if (!cancelled) setOptedIn(next);
+    });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, []);
 
-  if (!APP_ID) {
+  if (!isOneSignalConfigured()) {
     return (
       <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-base">Push notifications</CardTitle>
           <CardDescription>
-            Notifications are not configured for this environment yet.
+            Push notifications are not configured for this deployment.
           </CardDescription>
         </CardHeader>
       </Card>
     );
   }
 
-  async function handleEnable() {
-    setBusy(true);
-    try {
-      await OneSignal.Slidedown.promptPush();
-      setOptedIn(Boolean(OneSignal.User.PushSubscription.optedIn));
-    } finally {
-      setBusy(false);
-    }
+  const unavailableMessage = getOneSignalUnavailableMessage();
+  if (unavailableMessage) {
+    return (
+      <Card className="rounded-2xl">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Bell className="size-4" />
+            Push notifications
+          </CardTitle>
+          <CardDescription>{unavailableMessage}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
   }
 
-  async function handleDisable() {
+  async function handleToggle(checked: boolean) {
+    if (busy || optedIn === null) return;
+
     setBusy(true);
+    setError(null);
+    const previous = optedIn;
+    setOptedIn(checked);
+
     try {
-      await OneSignal.User.PushSubscription.optOut();
-      setOptedIn(false);
+      if (checked) {
+        const result = await enablePushNotifications();
+        setOptedIn(result.optedIn);
+        if (!result.ok) {
+          setOptedIn(previous);
+          if (result.message) setError(result.message);
+        }
+      } else {
+        await disablePushNotifications();
+        setOptedIn(false);
+      }
+    } catch (e) {
+      setOptedIn(previous);
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Could not update notification settings. Try again."
+      );
     } finally {
       setBusy(false);
     }
@@ -77,10 +150,13 @@ export function PushSettings() {
     optedIn === null
       ? "Checking…"
       : optedIn
-        ? "Enabled"
+        ? "On"
         : supported
           ? "Off"
           : "Not supported on this device";
+
+  const switchDisabled =
+    busy || optedIn === null || supported === false || supported === null;
 
   return (
     <Card className="rounded-2xl">
@@ -90,34 +166,47 @@ export function PushSettings() {
           Push notifications
         </CardTitle>
         <CardDescription>
-          Get alerts when a new harvest goes live or GNG sends a message.
+          Get alerts when a new harvest goes live or the CEO sends a message.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Status:{" "}
-          <span className="font-medium text-foreground">{statusLabel}</span>
-        </p>
-        {supported && optedIn !== true ? (
-          <Button
-            type="button"
-            className="h-11"
-            disabled={busy}
-            onClick={() => void handleEnable()}
-          >
-            {busy ? "Working…" : "Enable notifications"}
-          </Button>
-        ) : supported && optedIn ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11"
-            disabled={busy}
-            onClick={() => void handleDisable()}
-          >
-            {busy ? "Working…" : "Turn off notifications"}
-          </Button>
-        ) : null}
+      <CardContent className="space-y-3">
+        {braveHelp && (
+          <Alert>
+            <AlertDescription className="space-y-2">
+              <p>{braveHelp}</p>
+              <p className="text-xs text-muted-foreground">
+                Quick link:{" "}
+                <a
+                  href="brave://settings/privacy"
+                  className="font-medium underline underline-offset-2"
+                >
+                  brave://settings/privacy
+                </a>
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex items-center justify-between gap-4 rounded-xl border bg-muted/20 px-3 py-3">
+          <div className="min-w-0 space-y-0.5">
+            <p className="text-sm font-medium">Notifications</p>
+            <p className="text-xs text-muted-foreground">
+              {busy ? "Updating…" : statusLabel}
+            </p>
+          </div>
+          <Switch
+            checked={optedIn === true}
+            disabled={switchDisabled}
+            onCheckedChange={(checked) => void handleToggle(checked)}
+            aria-label="Push notifications"
+          />
+        </div>
       </CardContent>
     </Card>
   );

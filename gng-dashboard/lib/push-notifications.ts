@@ -65,15 +65,15 @@ export async function notifyNewHarvest(harvestName: string) {
   });
 }
 
-export async function notifyCeoMessage(message: string) {
+export async function notifyCeoMessage(message: string, harvestId?: string) {
   const preview =
     message.trim().length > 140
       ? `${message.trim().slice(0, 137)}…`
       : message.trim();
 
   return sendPushToSubscribers({
-    heading: "Message from GNG",
-    content: preview || "You have a new update from the GNG team.",
-    url: "/",
+    heading: "Message from CEO",
+    content: preview || "You have a new message from the CEO.",
+    url: harvestId ? `/harvest/${harvestId}/chat` : "/",
   });
 }

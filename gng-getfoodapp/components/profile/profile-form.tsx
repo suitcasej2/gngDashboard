@@ -17,9 +17,6 @@ export function ProfileForm({ subscriber }: { subscriber: Subscriber }) {
   const router = useRouter();
   const [phone, setPhone] = useState(subscriber.phone);
   const [address, setAddress] = useState(subscriber.address);
-  const [deliveryPreference, setDeliveryPreference] = useState(
-    subscriber.deliveryPreference
-  );
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -33,7 +30,6 @@ export function ProfileForm({ subscriber }: { subscriber: Subscriber }) {
       const result = await updateProfileAction({
         phone,
         address,
-        deliveryPreference,
       });
       if (!result.ok) {
         setError(result.message);
@@ -97,15 +93,6 @@ export function ProfileForm({ subscriber }: { subscriber: Subscriber }) {
                 className="h-12"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="deliveryPreference">Delivery preference</Label>
-              <Input
-                id="deliveryPreference"
-                className="h-12"
-                value={deliveryPreference}
-                onChange={(e) => setDeliveryPreference(e.target.value)}
               />
             </div>
 

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 import type { DraftHarvestRow } from "@/types/draft-harvest";
 import { updateLiveHarvestFields, updateLiveHarvestStatus } from "@/app/actions/harvest-admin";
+import { postCeoHarvestMessageAction } from "@/app/actions/harvest-messages";
+import { HarvestAlbumDialog } from "@/components/harvest/harvest-album-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -48,6 +50,13 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [statusActive, setStatusActive] = useState<DraftHarvestRow | null>(null);
 
+  const [ceoDialogOpen, setCeoDialogOpen] = useState(false);
+  const [ceoActive, setCeoActive] = useState<DraftHarvestRow | null>(null);
+  const [ceoMessage, setCeoMessage] = useState("");
+
+  const [albumDialogOpen, setAlbumDialogOpen] = useState(false);
+  const [albumActive, setAlbumActive] = useState<DraftHarvestRow | null>(null);
+
   function openDialog(row: DraftHarvestRow) {
     setActionError(null);
     setActive(row);
@@ -71,6 +80,30 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
   function closeStatusDialog() {
     setStatusDialogOpen(false);
     setStatusActive(null);
+  }
+
+  function openCeoDialog(row: DraftHarvestRow) {
+    setActionError(null);
+    setCeoActive(row);
+    setCeoMessage("");
+    setCeoDialogOpen(true);
+  }
+
+  function closeCeoDialog() {
+    setCeoDialogOpen(false);
+    setCeoActive(null);
+    setCeoMessage("");
+  }
+
+  function openAlbumDialog(row: DraftHarvestRow) {
+    setActionError(null);
+    setAlbumActive(row);
+    setAlbumDialogOpen(true);
+  }
+
+  function closeAlbumDialog() {
+    setAlbumDialogOpen(false);
+    setAlbumActive(null);
   }
 
   return (
@@ -120,11 +153,26 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                       <DropdownMenuItem
                         className="h-11 text-base"
                         onSelect={() => {
-                          // Let the menu close before opening a modal (avoids focus/overlay glitches)
                           window.setTimeout(() => openDialog(r), 0);
                         }}
                       >
                         Send Urgent Message
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="h-11 text-base"
+                        onSelect={() => {
+                          window.setTimeout(() => openCeoDialog(r), 0);
+                        }}
+                      >
+                        Post CEO Message
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="h-11 text-base"
+                        onSelect={() => {
+                          window.setTimeout(() => openAlbumDialog(r), 0);
+                        }}
+                      >
+                        Manage album
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -222,6 +270,76 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
       </Dialog>
 
       <Dialog
+        open={ceoDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) closeCeoDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-lg" showCloseButton>
+          <DialogHeader>
+            <DialogTitle>Post CEO Message</DialogTitle>
+            <DialogDescription>
+              {ceoActive ? (
+                <>
+                  This posts to the harvest chat as{" "}
+                  <span className="font-medium text-foreground">CEO</span> and
+                  sends a push notification to subscribers.
+                </>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label htmlFor="ceo-message">Message</Label>
+            <Textarea
+              id="ceo-message"
+              value={ceoMessage}
+              onChange={(e) => setCeoMessage(e.target.value)}
+              rows={5}
+              placeholder="Write a message for subscribers…"
+              className="min-h-32 resize-y text-base"
+              disabled={pending}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-12"
+              disabled={pending}
+              onClick={closeCeoDialog}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="h-12 px-6"
+              disabled={pending || !ceoActive || !ceoMessage.trim()}
+              onClick={() => {
+                if (!ceoActive) return;
+                setActionError(null);
+                start(async () => {
+                  const res = await postCeoHarvestMessageAction({
+                    harvestId: ceoActive.id,
+                    body: ceoMessage,
+                  });
+                  if (!res.ok) {
+                    setActionError(res.message);
+                    return;
+                  }
+                  closeCeoDialog();
+                  router.refresh();
+                });
+              }}
+            >
+              {pending ? "Sending…" : "Post message"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
         open={statusDialogOpen}
         onOpenChange={(open) => {
           if (!open) closeStatusDialog();
@@ -282,6 +400,15 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <HarvestAlbumDialog
+        open={albumDialogOpen}
+        harvestId={albumActive?.id ?? null}
+        harvestName={albumActive?.name ?? null}
+        onOpenChange={(open) => {
+          if (!open) closeAlbumDialog();
+        }}
+      />
     </div>
   );
 }

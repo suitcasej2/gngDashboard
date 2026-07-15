@@ -18,3 +18,12 @@ export type SubmitRsvpInput = {
   shippingAddress?: string;
   giftRecipientName?: string;
 };
+
+/** Subscriber who has RSVP'd for a harvest (for community roster). */
+export type HarvestRsvpParticipant = {
+  id: string;
+  subscriberId: string;
+  fullName: string;
+  choice: RsvpChoice;
+  avatarUrl: string | null;
+};
