@@ -18,6 +18,7 @@ import { DashboardRefreshButton } from "@/components/admin/dashboard-refresh-but
 import { DraftHarvestsTable } from "@/components/admin/harvest/draft-harvests-table";
 import { LiveHarvestsTable } from "@/components/admin/harvest/live-harvests-table";
 import { LiveRsvpTabs } from "@/components/admin/rsvp/live-rsvp-tabs";
+import { RsvpAutomationPanel } from "@/components/admin/rsvp/rsvp-automation-panel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -145,6 +146,7 @@ export default async function AdminDashboardPage() {
               <div className="rounded-xl border-2 border-[#FFF904]/35 bg-[linear-gradient(180deg,rgba(255,249,4,0.28),rgba(255,249,4,0.10),theme(colors.background))] p-3">
                 <p className="text-sm text-foreground/90">
                   Quick view of <span className="font-semibold">CEO messages</span>,{" "}
+                  <span className="font-semibold">RSVP automation</span>,{" "}
                   <span className="font-semibold">Drafts</span>,{" "}
                   <span className="font-semibold">Live Harvests</span>, and{" "}
                   <span className="font-semibold">RSVP operations</span>.
@@ -170,6 +172,10 @@ export default async function AdminDashboardPage() {
               initialMessages={ceoMessages}
             />
           )}
+        </div>
+
+        <div className="mt-8">
+          <RsvpAutomationPanel />
         </div>
 
         <div className="mt-8">
