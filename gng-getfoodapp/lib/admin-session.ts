@@ -6,8 +6,15 @@ import type { Subscriber } from "@/types/subscriber";
 
 export const ADMIN_SESSION_COOKIE = "gng-admin-session";
 
-/** Shorter than subscriber sessions — re-auth with Face ID periodically. */
+/** Shorter than subscriber sessions — re-auth with passkey periodically. */
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 8;
+
+function canHoldAdminSession(subscriber: Subscriber): boolean {
+  return (
+    isAdminEmail(subscriber.email) ||
+    subscriber.subscriptionStatus === "Staff"
+  );
+}
 
 export async function setAdminSession(subscriberId: string) {
   const cookieStore = await cookies();
@@ -31,7 +38,7 @@ export async function getAdminSessionSubscriber(): Promise<Subscriber | null> {
   if (!sessionId) return null;
 
   const subscriber = await getSubscriberById(sessionId);
-  if (!subscriber || !isAdminEmail(subscriber.email)) return null;
+  if (!subscriber || !canHoldAdminSession(subscriber)) return null;
 
   return subscriber;
 }

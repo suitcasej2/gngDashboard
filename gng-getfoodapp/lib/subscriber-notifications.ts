@@ -12,10 +12,6 @@ import type { SubscriberNotification } from "@/types/subscriber-notification";
 
 const NOTIFICATION_LIMIT = 50;
 
-function staffFirstName(name: string) {
-  return name.trim().split(/\s+/)[0] ?? name;
-}
-
 function messagePreview(body: string) {
   const trimmed = body.trim();
   if (trimmed.length <= 140) return trimmed;
@@ -55,12 +51,10 @@ async function listStaffMessageNotifications(
 
     if (!message.isStaff || !message.body.trim()) continue;
 
-    const author = staffFirstName(message.authorName);
-
     notifications.push({
       id: `message-${message.id}`,
       type: "message",
-      title: `Message from ${author}`,
+      title: "Mia's Broadcast",
       body: messagePreview(message.body),
       sentAt: message.createdAt,
       harvestId,

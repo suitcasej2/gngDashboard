@@ -50,8 +50,11 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "12mb",
     },
+    // Keep in sync with serverActions.bodySizeLimit when middleware/proxy
+    // buffers Server Action bodies (uploads, large form posts).
+    proxyClientMaxBodySize: "12mb",
     staleTimes: {
       dynamic: 60,
       static: 300,

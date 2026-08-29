@@ -164,7 +164,7 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                           window.setTimeout(() => openCeoDialog(r), 0);
                         }}
                       >
-                        Post CEO Message
+                        Post Mia&apos;s Broadcast
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="h-11 text-base"
@@ -277,12 +277,12 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
       >
         <DialogContent className="sm:max-w-lg" showCloseButton>
           <DialogHeader>
-            <DialogTitle>Post CEO Message</DialogTitle>
+            <DialogTitle>Mia&apos;s Broadcast</DialogTitle>
             <DialogDescription>
               {ceoActive ? (
                 <>
                   This posts to the harvest chat as{" "}
-                  <span className="font-medium text-foreground">CEO</span> and
+                  <span className="font-medium text-foreground">Mia</span> and
                   sends a push notification to subscribers.
                 </>
               ) : null}
@@ -290,9 +290,9 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
           </DialogHeader>
 
           <div className="space-y-2">
-            <Label htmlFor="ceo-message">Message</Label>
+            <Label htmlFor="broadcast-message">Broadcast</Label>
             <Textarea
-              id="ceo-message"
+              id="broadcast-message"
               value={ceoMessage}
               onChange={(e) => setCeoMessage(e.target.value)}
               rows={5}
@@ -333,7 +333,7 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                 });
               }}
             >
-              {pending ? "Sending…" : "Post message"}
+              {pending ? "Sending…" : "Post broadcast"}
             </Button>
           </DialogFooter>
         </DialogContent>

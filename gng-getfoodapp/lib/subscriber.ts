@@ -1,3 +1,5 @@
+import type { FieldSet } from "airtable";
+
 import {
   getAirtableBase,
   getSubscriberAvatarField,
@@ -5,10 +7,19 @@ import {
 } from "@/lib/airtable";
 import { escapeAirtableString, getStringField } from "@/lib/airtable-fields";
 import { mapSubscriberRecord } from "@/lib/airtable-mappers";
+import { phoneDigitsToAirtableNumber } from "@/lib/phone";
 import type { Subscriber } from "@/types/subscriber";
 
 export function isActiveSubscriber(subscriber: Subscriber): boolean {
   return subscriber.subscriptionStatus === "Active";
+}
+
+/** App sign-in: Active subscribers and Staff (admins/team). */
+export function canSignIn(subscriber: Subscriber): boolean {
+  return (
+    subscriber.subscriptionStatus === "Active" ||
+    subscriber.subscriptionStatus === "Staff"
+  );
 }
 
 export async function listActiveSubscribers(): Promise<Subscriber[]> {
@@ -104,12 +115,64 @@ export async function updateSubscriberProfile(
   const base = getAirtableBase();
   const tableName = getSubscribersTableName();
 
+  // Phone is a Number field in Airtable — must write digits, not a string.
+  const phoneNumber = phoneDigitsToAirtableNumber(updates.phone);
+  if (phoneNumber == null) {
+    throw new Error(
+      "Enter a valid 10-digit phone number (e.g. 6195551234)."
+    );
+  }
+
   const record = await base(tableName).update(subscriberId, {
-    Phone: updates.phone,
+    Phone: phoneNumber,
     Address: updates.address,
-    "Delivery Preference": updates.deliveryPreference,
+    ...(updates.deliveryPreference.trim()
+      ? { "Delivery Preference": updates.deliveryPreference }
+      : {}),
   });
 
+  return mapSubscriberRecord({
+    id: record.id,
+    fields: (record.fields || {}) as Record<string, unknown>,
+  });
+}
+
+export async function listAllSubscribers(): Promise<Subscriber[]> {
+  const base = getAirtableBase();
+  const tableName = getSubscribersTableName();
+
+  const records = await base(tableName)
+    .select({
+      sort: [{ field: "Full Name", direction: "asc" }],
+    })
+    .all();
+
+  return records.map((record) =>
+    mapSubscriberRecord({
+      id: record.id,
+      fields: (record.fields || {}) as Record<string, unknown>,
+    })
+  );
+}
+
+export async function adminUpdateSubscriber(
+  subscriberId: string,
+  updates: { email?: string; subscriptionStatus?: string }
+): Promise<Subscriber | null> {
+  const base = getAirtableBase();
+  const tableName = getSubscribersTableName();
+
+  const fields: Partial<FieldSet> = {};
+  if (updates.email !== undefined) {
+    fields["Email"] = updates.email.trim().toLowerCase();
+  }
+  if (updates.subscriptionStatus !== undefined) {
+    fields["Subscription Status"] = updates.subscriptionStatus;
+  }
+
+  if (Object.keys(fields).length === 0) return null;
+
+  const record = await base(tableName).update(subscriberId, fields);
   return mapSubscriberRecord({
     id: record.id,
     fields: (record.fields || {}) as Record<string, unknown>,

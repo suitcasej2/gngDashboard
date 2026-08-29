@@ -14,6 +14,9 @@ export type Harvest = {
   endTime: string | null;
   recipeTitle: string | null;
   recipeUrl: string | null;
+  bbSponsorName: string | null;
+  bbMessage: string | null;
+  bbImageUrl: string | null;
   storageTips: string | null;
   headerImageUrl: string | null;
   status: SubscriberHarvestStatus;

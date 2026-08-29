@@ -130,3 +130,29 @@ export function getAlbumAuthorLookupField() {
     "Full Name (from Full Name)"
   );
 }
+
+/** Outbox table for admin → Zapier mass emails */
+export function getMassEmailsTableName() {
+  return process.env.AIRTABLE_MASS_EMAILS_TABLE_NAME || "Mass Emails";
+}
+
+export function getMassEmailSubjectField() {
+  return process.env.AIRTABLE_MASS_EMAIL_SUBJECT_FIELD || "Subject";
+}
+
+export function getMassEmailBodyHtmlField() {
+  return process.env.AIRTABLE_MASS_EMAIL_BODY_HTML_FIELD || "Body HTML";
+}
+
+export function getMassEmailStatusField() {
+  return process.env.AIRTABLE_MASS_EMAIL_STATUS_FIELD || "Status";
+}
+
+export function getMassEmailCreatedByField() {
+  return process.env.AIRTABLE_MASS_EMAIL_CREATED_BY_FIELD || "Created By";
+}
+
+export function getMassEmailNotesField() {
+  return process.env.AIRTABLE_MASS_EMAIL_NOTES_FIELD || "Notes";
+}
+

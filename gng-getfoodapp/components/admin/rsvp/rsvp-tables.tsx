@@ -126,7 +126,10 @@ export function AllRsvpsTable({ rows }: { rows: AllRsvpRow[] }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          All RSVPs for harvests with linked Status = <span className="font-medium text-foreground">Sent</span>.
+          All RSVPs for harvests with linked Status ={" "}
+          <span className="font-medium text-foreground">Publish</span>,{" "}
+          <span className="font-medium text-foreground">Published</span>, or{" "}
+          <span className="font-medium text-foreground">Sent</span>.
         </p>
         <p className="text-sm text-muted-foreground tabular-nums">{rows.length}</p>
       </div>

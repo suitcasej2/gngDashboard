@@ -176,6 +176,9 @@ export function DraftHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                       <DropdownMenuItem asChild className="h-11 text-base">
                         <Link href={`/admin/publish/${r.id}`}>Edit</Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="h-11 text-base">
+                        <Link href={`/admin/publish/${r.id}/preview`}>Preview</Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="h-11 text-base text-destructive focus:text-destructive"

@@ -14,6 +14,7 @@ import {
 } from "react";
 
 import { logoutAction } from "@/app/actions/auth";
+import { DeveloperCredit } from "@/components/developer-credit";
 import { ADMIN_NAV_ITEM, isNavActive, NAV_ITEMS } from "@/components/layout/nav-config";
 import { NavLink } from "@/components/layout/nav-link";
 import { cn } from "@/lib/utils";
@@ -143,6 +144,7 @@ function DesktopSidebar() {
         <NavLinks pathname={pathname} className="flex-1" showAdminLink={isAdmin} />
         <div className="border-t pt-3">
           <SignOutButton onSignOut={handleLogout} disabled={isPending} />
+          <DeveloperCredit className="mt-3 px-1 text-left text-xs text-muted-foreground" />
         </div>
       </div>
     </aside>
@@ -211,6 +213,7 @@ function MobileSideNavDrawer({
           />
           <div className="border-t pt-3">
             <SignOutButton onSignOut={handleLogout} disabled={isPending} />
+            <DeveloperCredit className="mt-3 px-1 text-left text-xs text-muted-foreground" />
           </div>
         </div>
       </aside>

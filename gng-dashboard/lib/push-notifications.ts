@@ -72,8 +72,8 @@ export async function notifyCeoMessage(message: string, harvestId?: string) {
       : message.trim();
 
   return sendPushToSubscribers({
-    heading: "Message from CEO",
-    content: preview || "You have a new message from the CEO.",
+    heading: "Mia's Broadcast",
+    content: preview || "You have a new broadcast from Mia.",
     url: harvestId ? `/harvest/${harvestId}/chat` : "/",
   });
 }

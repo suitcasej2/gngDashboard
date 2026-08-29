@@ -19,6 +19,8 @@ export function getStringField(
 ) {
   const v = getField(fields, name);
   if (typeof v === "string" && v.trim()) return v.trim();
+  // Number fields (e.g. Subscribers.Phone) come back as numbers from Airtable.
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
   return null;
 }
 

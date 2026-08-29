@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import { updateProfileAction } from "@/app/actions/profile";
+import { DeveloperCredit } from "@/components/developer-credit";
 import { ProfileAvatarPicker } from "@/components/profile/profile-avatar-picker";
 import { PushSettings } from "@/components/push/push-settings";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -81,10 +82,17 @@ export function ProfileForm({ subscriber }: { subscriber: Subscriber }) {
               <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 className="h-12"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                placeholder="6195551234"
               />
+              <p className="text-xs text-muted-foreground">
+                10-digit US number.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
@@ -113,6 +121,8 @@ export function ProfileForm({ subscriber }: { subscriber: Subscriber }) {
       >
         Sign out
       </Button>
+
+      <DeveloperCredit className="pt-2 text-center text-xs text-muted-foreground" />
     </div>
   );
 }

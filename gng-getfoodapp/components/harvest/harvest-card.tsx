@@ -25,7 +25,7 @@ export function HarvestCard({
   /** When set on the current harvest, shows the RSVP button in the card body */
   rsvp?: HarvestRsvp | null;
 }) {
-  const imageSrc = harvest.headerImageUrl ?? "/HeaderImage.png";
+  const imageSrc = harvest.headerImageUrl ?? "/HeaderImage.jpg";
   const dateLabel = formatHarvestDateRange(harvest.startDate, harvest.endDate);
   const timeLabel =
     harvest.startTime && harvest.endTime

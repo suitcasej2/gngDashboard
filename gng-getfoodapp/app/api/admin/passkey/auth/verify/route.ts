@@ -5,7 +5,7 @@ import {
   findPasskeyByCredentialId,
   updatePasskeyCounter,
 } from "@/lib/admin-passkeys";
-import { isAdminEmail } from "@/lib/admin-emails";
+import { isAdminSubscriber } from "@/lib/admin";
 import { setAdminSession } from "@/lib/admin-session";
 import { findSubscriberByEmail } from "@/lib/subscriber";
 import {
@@ -19,16 +19,24 @@ export async function POST(request: Request) {
     const challenge = await consumeWebAuthnChallenge("authenticate");
     if (!challenge) {
       return NextResponse.json(
-        { error: "Sign-in expired. Please try Face ID again." },
+        { error: "Sign-in expired. Please try your passkey again." },
         { status: 400 }
       );
     }
 
     const body = await request.json();
     const passkey = await findPasskeyByCredentialId(body.id);
-    if (!passkey || !isAdminEmail(passkey.email)) {
+    if (!passkey) {
       return NextResponse.json(
         { error: "Unrecognized admin passkey." },
+        { status: 403 }
+      );
+    }
+
+    const subscriber = await findSubscriberByEmail(passkey.email);
+    if (!subscriber || !isAdminSubscriber(subscriber)) {
+      return NextResponse.json(
+        { error: "That passkey is not linked to a Staff/admin account." },
         { status: 403 }
       );
     }
@@ -38,7 +46,7 @@ export async function POST(request: Request) {
       expectedChallenge: challenge.challenge,
       expectedOrigin: getWebAuthnOrigin(),
       expectedRPID: getWebAuthnRpId(),
-      requireUserVerification: true,
+      requireUserVerification: false,
       credential: {
         id: passkey.credentialId,
         publicKey: Buffer.from(passkey.publicKey, "base64url"),
@@ -49,7 +57,7 @@ export async function POST(request: Request) {
 
     if (!verification.verified) {
       return NextResponse.json(
-        { error: "Face ID verification failed." },
+        { error: "Passkey verification failed." },
         { status: 400 }
       );
     }
@@ -57,20 +65,14 @@ export async function POST(request: Request) {
     const { newCounter } = verification.authenticationInfo;
     await updatePasskeyCounter(passkey.id, newCounter);
 
-    const subscriber = await findSubscriberByEmail(passkey.email);
-    if (!subscriber) {
-      return NextResponse.json(
-        { error: "Admin account not found." },
-        { status: 404 }
-      );
-    }
-
     await setAdminSession(subscriber.id);
 
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Could not verify Face ID sign-in.";
+      error instanceof Error
+        ? error.message
+        : "Could not verify passkey sign-in.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

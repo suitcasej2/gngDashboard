@@ -65,7 +65,7 @@ export function CeoMessagesPanel({ harvest, initialMessages }: CeoMessagesPanelP
       if ("pushWarning" in res && res.pushWarning) {
         setActionWarning(res.pushWarning);
       } else {
-        setActionSuccess("Message posted and push notification sent.");
+        setActionSuccess("Broadcast posted and push notification sent.");
       }
     });
   }
@@ -75,14 +75,14 @@ export function CeoMessagesPanel({ harvest, initialMessages }: CeoMessagesPanelP
       <CardHeader className="border-b border-[#FFF904]/25 bg-[linear-gradient(180deg,rgba(255,249,4,0.22),rgba(255,249,4,0.06),transparent)] pb-4">
         <CardTitle className="flex items-center gap-2 text-base">
           <MessageSquare className="size-4" />
-          CEO messages
+          Mia&apos;s Broadcast
         </CardTitle>
         <CardDescription>
           {harvest ? (
             <>
               Post to the chat for{" "}
               <span className="font-medium text-foreground">{harvest.name}</span> and
-              notify subscribers.
+              notify neighbors.
             </>
           ) : (
             "No live harvest right now. Publish a harvest or set status to Publish/Sent to send messages."
@@ -93,7 +93,7 @@ export function CeoMessagesPanel({ harvest, initialMessages }: CeoMessagesPanelP
       <CardContent className="space-y-4 pt-4">
         {actionSuccess ? (
           <Alert>
-            <AlertTitle>Message sent</AlertTitle>
+            <AlertTitle>Broadcast sent</AlertTitle>
             <AlertDescription>{actionSuccess}</AlertDescription>
           </Alert>
         ) : null}
@@ -107,20 +107,20 @@ export function CeoMessagesPanel({ harvest, initialMessages }: CeoMessagesPanelP
 
         {actionError ? (
           <Alert variant="destructive">
-            <AlertTitle>Couldn&apos;t post message</AlertTitle>
+            <AlertTitle>Couldn&apos;t post broadcast</AlertTitle>
             <AlertDescription>{actionError}</AlertDescription>
           </Alert>
         ) : null}
 
         {harvest ? (
           <div className="space-y-2">
-            <Label htmlFor="ceo-compose">New message</Label>
+            <Label htmlFor="broadcast-compose">New broadcast</Label>
             <Textarea
-              id="ceo-compose"
+              id="broadcast-compose"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               rows={4}
-              placeholder="Write a message for subscribers…"
+              placeholder="Write a message for neighbors…"
               className="min-h-28 resize-y text-base"
               disabled={pending}
             />
@@ -131,7 +131,7 @@ export function CeoMessagesPanel({ harvest, initialMessages }: CeoMessagesPanelP
                 disabled={pending || !draft.trim()}
                 onClick={handlePost}
               >
-                {pending ? "Sending…" : "Post message"}
+                {pending ? "Sending…" : "Post broadcast"}
               </Button>
             </div>
           </div>
@@ -165,7 +165,7 @@ export function CeoMessagesPanel({ harvest, initialMessages }: CeoMessagesPanelP
             sortedMessages.length === 0 ? (
               <p className="rounded-xl border border-dashed bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
                 {harvest
-                  ? "No CEO messages for this harvest yet."
+                  ? "No broadcasts for this harvest yet."
                   : "Messages will appear here once a live harvest is available."}
               </p>
             ) : (

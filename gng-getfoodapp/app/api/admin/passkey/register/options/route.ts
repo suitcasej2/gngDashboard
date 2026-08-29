@@ -27,8 +27,12 @@ export async function POST() {
         transports: passkey.transports as AuthenticatorTransport[],
       })),
       authenticatorSelection: {
-        residentKey: "required",
-        userVerification: "required",
+        // Prefer platform biometrics (Face ID / Touch ID / Windows Hello),
+        // but allow security keys / phone if the desktop has none.
+        authenticatorAttachment: undefined,
+        residentKey: "preferred",
+        requireResidentKey: false,
+        userVerification: "preferred",
       },
     });
 

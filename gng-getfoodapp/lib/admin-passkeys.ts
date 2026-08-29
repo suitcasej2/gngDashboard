@@ -131,23 +131,34 @@ export async function createPasskey(input: {
 }) {
   const base = getAirtableBase();
   const tableName = getAdminPasskeysTableName();
+  const publicKeyField = getPublicKeyField();
 
-  const record = await base(tableName).create({
-    [getEmailField()]: input.email.trim().toLowerCase(),
-    [getCredentialIdField()]: input.credentialId,
-    [getPublicKeyField()]: input.publicKey,
-    [getCounterField()]: input.counter,
-    [getTransportsField()]: (input.transports ?? []).join(","),
-  });
+  try {
+    const record = await base(tableName).create({
+      [getEmailField()]: input.email.trim().toLowerCase(),
+      [getCredentialIdField()]: input.credentialId,
+      [publicKeyField]: input.publicKey,
+      [getCounterField()]: input.counter,
+      [getTransportsField()]: (input.transports ?? []).join(","),
+    });
 
-  const passkey = mapPasskeyRecord({
-    id: record.id,
-    fields: (record.fields || {}) as Record<string, unknown>,
-  });
-  if (!passkey) {
-    throw new Error("Passkey was saved but could not be read back.");
+    const passkey = mapPasskeyRecord({
+      id: record.id,
+      fields: (record.fields || {}) as Record<string, unknown>,
+    });
+    if (!passkey) {
+      throw new Error("Passkey was saved but could not be read back.");
+    }
+    return passkey;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/Unknown field name/i.test(message) && /Public Key/i.test(message)) {
+      throw new Error(
+        `Airtable table "${tableName}" is missing a "${publicKeyField}" field. Add a Long text field named exactly "${publicKeyField}", then try Face ID setup again.`
+      );
+    }
+    throw error;
   }
-  return passkey;
 }
 
 export async function updatePasskeyCounter(recordId: string, counter: number) {

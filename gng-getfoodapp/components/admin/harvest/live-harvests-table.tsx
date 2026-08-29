@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 import type { DraftHarvestRow } from "@/types/draft-harvest";
@@ -141,6 +142,9 @@ export function LiveHarvestsTable({ rows }: { rows: DraftHarvestRow[] }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem asChild className="h-11 text-base">
+                        <Link href={`/admin/publish/${r.id}`}>Edit details</Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         className="h-11 text-base"
                         onSelect={() => {

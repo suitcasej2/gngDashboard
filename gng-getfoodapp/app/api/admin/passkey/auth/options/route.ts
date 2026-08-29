@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     const options = await generateAuthenticationOptions({
       rpID: getWebAuthnRpId(),
-      userVerification: "required",
+      userVerification: "preferred",
       allowCredentials: email
         ? passkeys
             .filter((passkey) => passkey.email === email)

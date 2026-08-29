@@ -5,11 +5,15 @@ import type { Subscriber } from "@/types/subscriber";
 
 export { getAdminEmails, isAdminEmail } from "@/lib/admin-emails";
 
+/** Admin access: allowlisted email OR Subscription Status = Staff. */
 export function isAdminSubscriber(subscriber: Subscriber): boolean {
-  return isAdminEmail(subscriber.email);
+  return (
+    isAdminEmail(subscriber.email) ||
+    subscriber.subscriptionStatus === "Staff"
+  );
 }
 
-/** Admin dashboard access — requires passkey session (Face ID). */
+/** Admin dashboard access — requires passkey session (Face ID / passkey). */
 export async function getSessionAdmin(): Promise<Subscriber | null> {
   return getAdminSessionSubscriber();
 }
@@ -22,11 +26,13 @@ export async function requireAdminSession(): Promise<Subscriber> {
   return admin;
 }
 
-/** Enrollment only — subscriber email session + allowlisted admin email. */
+/** Enrollment — subscriber session must be an admin (email allowlist or Staff). */
 export async function requireAdminEnrollmentSession(): Promise<Subscriber> {
   const subscriber = await getSessionSubscriber();
   if (!subscriber || !isAdminSubscriber(subscriber)) {
-    throw new Error("Sign in with your admin email before setting up Face ID.");
+    throw new Error(
+      "Sign in with a Staff account (or an allowlisted admin email) before setting up a passkey."
+    );
   }
   return subscriber;
 }

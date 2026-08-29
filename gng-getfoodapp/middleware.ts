@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { ADMIN_SESSION_COOKIE } from "@/lib/admin-session";
 import { SESSION_COOKIE } from "@/lib/session";
 
-const PUBLIC_PATHS = ["/login", "/admin/login"];
+const PUBLIC_PATHS = ["/login", "/install", "/admin/login", "/admin/enroll"];
 
 const ADMIN_PUBLIC_PATHS = ["/admin/login", "/admin/enroll"];
 
@@ -26,12 +26,16 @@ export function middleware(request: NextRequest) {
   const session = request.cookies.get(SESSION_COOKIE)?.value;
   const adminSession = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
 
+  // Admin dashboard uses its own passkey session. Do not also require a
+  // subscriber cookie here — a redirect HTML response breaks Server Actions
+  // ("An unexpected response was received from the server.").
   if (pathname.startsWith("/admin") && !ADMIN_PUBLIC_PATHS.includes(pathname)) {
     if (!adminSession) {
       const loginUrl = new URL("/admin/login", request.url);
       loginUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(loginUrl);
     }
+    return NextResponse.next();
   }
 
   if (!session && !isPublic) {
@@ -41,7 +45,11 @@ export function middleware(request: NextRequest) {
   }
 
   if (session && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
+    // Honor ?next= so admins can reach /admin/enroll without bouncing to home.
+    const next = request.nextUrl.searchParams.get("next");
+    const safeNext =
+      next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    return NextResponse.redirect(new URL(safeNext, request.url));
   }
 
   if (adminSession && pathname === "/admin/login") {

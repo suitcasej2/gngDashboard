@@ -2,7 +2,8 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { createHarvest, updateHarvest, uploadImageToBlob } from "@/app/actions/admin/harvest";
+import { upload } from "@vercel/blob/client";
+import { createHarvest, updateHarvest } from "@/app/actions/admin/harvest";
 import type { CreateHarvestInput, HarvestStatus } from "@/app/actions/admin/harvest";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,34 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+const HARVEST_UPLOAD_HANDLE_URL = "/api/admin/blob/upload";
+const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
+function safeImageBasename(name: string) {
+  return (
+    name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-z0-9_-]+/gi, "-")
+      .replace(/-+/g, "-")
+      .replace(/(^-|-$)/g, "")
+      .slice(0, 40) || "image"
+  );
+}
+
+function extensionForImage(file: File) {
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+  if (file.type === "image/gif") return "gif";
+  return "jpg";
+}
 
 const DEFAULT_PICKUP_LOCATION =
   '3550 Park Blvd SD CA 92103 Garage 7 (Turn the Garage handle to the left until it clicks and roll the door up!)';
@@ -97,23 +126,51 @@ function UploadZone(props: {
             <Label className="sr-only">{title}</Label>
             <Input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
               disabled={pending}
               onChange={(e) => {
                 setError(null);
                 const f = e.currentTarget.files?.[0];
                 if (!f) return;
+
+                if (!ALLOWED_IMAGE_TYPES.has(f.type)) {
+                  setError(
+                    "Please upload a PNG, JPG, WEBP, or GIF. (iPhone HEIC photos need to be converted first.)"
+                  );
+                  e.currentTarget.value = "";
+                  return;
+                }
+
+                if (f.size > MAX_IMAGE_BYTES) {
+                  setError("That image is too large. Please upload something under 12MB.");
+                  e.currentTarget.value = "";
+                  return;
+                }
+
                 const preview = URL.createObjectURL(f);
                 setLocalPreview(preview);
 
                 startTransition(async () => {
                   try {
-                    const { url } = await uploadImageToBlob({ file: f, folder });
-                    onChange(url);
+                    const pathname = `${folder}/${safeImageBasename(f.name)}.${extensionForImage(f)}`;
+                    const blob = await upload(pathname, f, {
+                      access: "public",
+                      handleUploadUrl: HARVEST_UPLOAD_HANDLE_URL,
+                      contentType: f.type,
+                    });
+                    onChange(blob.url);
                     setError(null);
                   } catch (err) {
-                    const msg = err instanceof Error ? err.message : "Upload failed.";
-                    setError(msg);
+                    const msg =
+                      err instanceof Error
+                        ? err.message
+                        : "Upload failed. Please try again.";
+                    setError(
+                      msg.includes("Failed to  retrieve the client token") ||
+                        msg.includes("Failed to retrieve the client token")
+                        ? "Couldn’t start upload. Check your admin session and try signing in again."
+                        : msg
+                    );
                   }
                 });
               }}
@@ -157,10 +214,12 @@ function UploadZone(props: {
 export function HarvestForm(props?: {
   recordId?: string;
   initial?: Partial<Omit<CreateHarvestInput, "status">> & { status?: HarvestStatus };
+  isLiveHarvest?: boolean;
 }) {
   const recordId = props?.recordId;
   const initial = props?.initial;
   const isEdit = Boolean(recordId);
+  const isLiveHarvest = Boolean(props?.isLiveHarvest);
 
   const [status, setStatus] = useState<HarvestStatus>(initial?.status ?? "Draft");
   const [isSaving, startSaving] = useTransition();
@@ -232,9 +291,15 @@ export function HarvestForm(props?: {
       <div className="mx-auto max-w-xl px-4 pb-10 pt-6">
         <header className="space-y-2">
           <p className="text-xs font-medium tracking-wide text-muted-foreground">
-            CEO Harvest Dashboard
+            Admin Harvest Dashboard
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight">Publish a new Harvest</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {isLiveHarvest
+              ? "Edit live harvest"
+              : isEdit
+                ? "Edit harvest"
+                : "Publish a new Harvest"}
+          </h1>
           <p className="text-sm text-muted-foreground">
             Mobile-first console for creating harvests with reliable image uploads.
           </p>

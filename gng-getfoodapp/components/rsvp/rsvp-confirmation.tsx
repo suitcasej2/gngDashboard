@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { NavLink } from "@/components/layout/nav-link";
 import { MenuButton } from "@/components/layout/side-nav";
+import { AddToCalendarButton } from "@/components/harvest/add-to-calendar-button";
 import { RsvpConfetti } from "@/components/rsvp/rsvp-confetti";
 import { formatHarvestDateRange } from "@/lib/format";
 import {
@@ -35,6 +36,7 @@ export function RsvpConfirmation({
   firstName: string;
 }) {
   const when = formatHarvestWhen(harvest);
+  const isGift = choice === "gift";
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-[#faf7f2] px-4 pb-[max(env(safe-area-inset-bottom),2rem)] pt-[max(env(safe-area-inset-top),1rem)]">
@@ -54,9 +56,22 @@ export function RsvpConfirmation({
         <p className="mt-3 max-w-[36ch] text-base leading-relaxed text-[#4a3728] animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both delay-75">
           {rsvpConfirmationMessage(choice, harvest.name, firstName)}
         </p>
-        <p className="mt-2 max-w-[36ch] text-sm text-[#5c4a3d] animate-in fade-in duration-500 fill-mode-both delay-100">
-          Here&apos;s your harvest pickup details.
-        </p>
+
+        {isGift ? (
+          <div className="mt-4 w-full max-w-xl rounded-[1.15rem] border border-[#2a1f12]/15 bg-[#FFF904]/35 px-5 py-4 text-left animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both delay-100">
+            <p className="text-sm font-semibold text-[#2a1f12]">
+              Forward the confirmation email
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-[#4a3728]">
+              Check your inbox for the gift confirmation, then forward that
+              email to your recipient so they have the pickup details.
+            </p>
+          </div>
+        ) : (
+          <p className="mt-2 max-w-[36ch] text-sm text-[#5c4a3d] animate-in fade-in duration-500 fill-mode-both delay-100">
+            Here&apos;s your harvest pickup details.
+          </p>
+        )}
 
         {harvest.headerImageUrl ? (
           <div className="mt-6 w-full max-w-xl overflow-hidden rounded-2xl border border-[#2a1f12]/8 bg-[#fffcf8] shadow-[0_12px_40px_-18px_rgba(42,31,18,0.45)] animate-in fade-in slide-in-from-bottom-3 duration-700 fill-mode-both delay-150">
@@ -105,6 +120,11 @@ export function RsvpConfirmation({
             </p>
           ) : null}
         </div>
+
+        <AddToCalendarButton
+          harvest={harvest}
+          className="mt-5 w-full max-w-xl animate-in fade-in duration-500 fill-mode-both delay-250"
+        />
 
         <div className="mt-8 flex w-full max-w-xl flex-col gap-3 sm:flex-row">
           <Button

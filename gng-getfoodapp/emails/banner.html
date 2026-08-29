@@ -1,0 +1,30 @@
+</style>
+
+<div id="gng-app-banner" class="gng-app-banner-wrap" role="region" aria-label="Get Food announcement">
+  <div class="gng-app-banner-track">
+    <span class="gng-app-banner-item">Get Food has a new home, built just for this community. This is your penultimate Evite.</span>
+    <span class="gng-app-banner-item">Get Food has a new home, built just for this community. This is your penultimate Evite.</span>
+    <span class="gng-app-banner-item" data-clone>Get Food has a new home, built just for this community. This is your penultimate Evite.</span>
+    <span class="gng-app-banner-item" data-clone>Get Food has a new home, built just for this community. This is your penultimate Evite.</span>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var banner = document.getElementById("gng-app-banner");
+    var header = document.querySelector("#header");
+    if (!banner || !header) return;
+
+    // Sit ABOVE the nav
+    header.insertAdjacentElement("beforebegin", banner);
+
+    function syncBannerOffset() {
+      var h = Math.ceil(banner.getBoundingClientRect().height);
+      document.documentElement.style.setProperty("--gng-banner-h", h + "px");
+      header.classList.add("gng-banner-offset");
+    }
+
+    syncBannerOffset();
+    window.addEventListener("resize", syncBannerOffset);
+  });
+</script>

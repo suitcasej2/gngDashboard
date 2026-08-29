@@ -71,8 +71,10 @@ export function AdminPasskeyEnroll({ adminName }: { adminName: string }) {
       ) : null}
 
       <p className="text-sm text-muted-foreground">
-        Signed in as <span className="font-medium text-foreground">{adminName}</span>.
-        Register this device so only you can open the admin dashboard.
+        Signed in as{" "}
+        <span className="font-medium text-foreground">{adminName}</span>.
+        Register a passkey for this browser/device (Touch ID, Face ID, Windows
+        Hello, or a security key).
       </p>
 
       <Button
@@ -82,7 +84,7 @@ export function AdminPasskeyEnroll({ adminName }: { adminName: string }) {
         onClick={() => void handleEnroll()}
       >
         <ScanFace className="size-5" />
-        {pending ? "Follow the Face ID prompt…" : "Set up Face ID"}
+        {pending ? "Follow the passkey prompt…" : "Set up passkey"}
       </Button>
     </div>
   );

@@ -1,6 +1,5 @@
 "use server";
 
-import { put } from "@vercel/blob";
 import { getAirtableBase, getHarvestNameField, getHarvestsTableName } from "@/lib/airtable";
 import { requireAdminSession } from "@/lib/admin";
 import { notifyNewHarvest } from "@/lib/push-notifications";
@@ -105,62 +104,6 @@ function withPrimaryFieldBomFix(
   next[bomKey] = value;
 
   return next;
-}
-
-export async function uploadImageToBlob(input: {
-  file: File;
-  folder:
-    | "harvest-box"
-    | "recipe"
-    | "bread-butter-jam"
-    | "donor-logo";
-}) {
-  await requireAdminSession();
-  const { file, folder } = input;
-
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error("Missing environment variable: BLOB_READ_WRITE_TOKEN");
-  }
-
-  if (!file || file.size === 0) {
-    throw new Error("Please choose an image file.");
-  }
-
-  if (!file.type.startsWith("image/")) {
-    throw new Error("That file isn’t an image. Please upload a PNG, JPG, or WEBP.");
-  }
-
-  if (file.type === "image/svg+xml") {
-    throw new Error("SVG uploads aren’t supported. Please upload a PNG, JPG, or WEBP.");
-  }
-
-  const maxBytes = 12 * 1024 * 1024; // 12MB
-  if (file.size > maxBytes) {
-    throw new Error("That image is too large. Please upload something under 12MB.");
-  }
-
-  const extFromType =
-    file.type === "image/png"
-      ? "png"
-      : file.type === "image/webp"
-        ? "webp"
-        : "jpg";
-
-  const safeBase =
-    file.name
-      .replace(/\.[^/.]+$/, "")
-      .replace(/[^a-z0-9_-]+/gi, "-")
-      .replace(/-+/g, "-")
-      .replace(/(^-|-$)/g, "")
-      .slice(0, 40) || "image";
-
-  const blob = await put(`${folder}/${safeBase}.${extFromType}`, file, {
-    access: "public",
-    addRandomSuffix: true,
-    contentType: file.type,
-  });
-
-  return { url: blob.url };
 }
 
 export async function createHarvest(input: CreateHarvestInput) {
@@ -270,6 +213,26 @@ export async function updateHarvest(
     const tableName = getHarvestsTableName();
     const harvestNameField = getHarvestNameField();
 
+    // Preserve live Airtable statuses (Publish / Sent / Published) when the form
+    // still says "Published", so editing details doesn't rewrite status labels.
+    let statusToWrite: string = input.status;
+    if (input.status === "Published") {
+      const existing = await base(tableName).find(input.recordId);
+      const existingStatus = String(
+        (existing.fields as Record<string, unknown> | undefined)?.["Status"] ?? ""
+      ).trim();
+      if (
+        existingStatus === "Publish" ||
+        existingStatus === "Published" ||
+        existingStatus === "Sent"
+      ) {
+        statusToWrite = existingStatus;
+      } else {
+        // Drafts published from the form use "Published"; draft-table publish uses "Publish".
+        statusToWrite = "Publish";
+      }
+    }
+
     const fields: Record<string, unknown> = {
       [harvestNameField]: input.harvestName.trim(),
 
@@ -284,7 +247,7 @@ export async function updateHarvest(
       "Featured Recipe Title": input.recipeTitle?.trim() || "",
       "Recipe URL": input.recipeUrl?.trim() || "",
       "Storage Tips": input.storageTips?.trim() || "",
-      Status: input.status,
+      Status: statusToWrite,
 
       "Header Image URL": input.harvestBoxImageUrl ?? "",
       "Recipe Image URL": input.recipeImageUrl ?? "",

@@ -157,8 +157,8 @@ export async function notifyCeoMessage(
   const path = messageId ? `/?message=${messageId}` : harvestId ? "/" : "/";
 
   return sendPushToSubscribers({
-    heading: "Message from CEO",
-    content: preview || "You have a new message from the CEO.",
+    heading: "Mia's Broadcast",
+    content: preview || "You have a new broadcast from Mia.",
     url: path,
   });
 }

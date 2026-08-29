@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Calendar, MapPin, Package } from "lucide-react";
 
 import { formatHarvestDateRange } from "@/lib/format";
@@ -24,6 +25,46 @@ export function HarvestDetailsHeader({ harvest }: { harvest: Harvest }) {
             <span>{timeLabel}</span>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+function BreadAndButterJam({ harvest }: { harvest: Harvest }) {
+  const hasContent =
+    Boolean(harvest.bbSponsorName?.trim()) ||
+    Boolean(harvest.bbMessage?.trim()) ||
+    Boolean(harvest.bbImageUrl?.trim());
+
+  if (!hasContent) return null;
+
+  return (
+    <div className="rounded-xl bg-muted/50 px-3 py-3">
+      <div className="flex gap-3">
+        {harvest.bbImageUrl ? (
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+            <Image
+              src={harvest.bbImageUrl}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="64px"
+            />
+          </div>
+        ) : null}
+        <div className="min-w-0 space-y-1">
+          <p className="font-medium">Bread &amp; Butter Jam</p>
+          {harvest.bbSponsorName?.trim() ? (
+            <p className="text-sm text-muted-foreground">
+              From {harvest.bbSponsorName.trim()}
+            </p>
+          ) : null}
+          {harvest.bbMessage?.trim() ? (
+            <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+              {harvest.bbMessage.trim()}
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -85,6 +126,8 @@ export function HarvestDetails({
             </div>
           </div>
         )}
+
+        <BreadAndButterJam harvest={harvest} />
 
         {harvest.recipeTitle && (
           <div className="rounded-xl bg-muted/50 px-3 py-3">

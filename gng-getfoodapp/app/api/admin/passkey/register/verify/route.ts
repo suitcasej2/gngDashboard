@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       expectedChallenge: challenge.challenge,
       expectedOrigin: getWebAuthnOrigin(),
       expectedRPID: getWebAuthnRpId(),
-      requireUserVerification: true,
+      requireUserVerification: false,
     });
 
     if (!verification.verified || !verification.registrationInfo) {

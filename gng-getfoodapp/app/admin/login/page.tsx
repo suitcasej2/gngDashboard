@@ -19,17 +19,17 @@ export default function AdminLoginPage() {
           <div>
             <h1 className="font-heading text-2xl">Admin dashboard</h1>
             <p className="text-sm text-muted-foreground">
-              Harvest publishing and CEO messages
+              Harvest publishing and Mia&apos;s Broadcast
             </p>
           </div>
         </div>
 
         <Card className="rounded-2xl border-[#FFF904]/35 bg-background/70 backdrop-blur ring-1 ring-foreground/5">
           <CardHeader>
-            <CardTitle>Sign in with Face ID</CardTitle>
+            <CardTitle>Admin access</CardTitle>
             <CardDescription>
-              Admin access requires your passkey. Use the device where you set up
-              Face ID or Touch ID.
+              First time: enter your Staff email and create a passkey. Later:
+              sign in with that passkey (Touch ID / Face ID / Windows Hello).
             </CardDescription>
           </CardHeader>
           <CardContent>

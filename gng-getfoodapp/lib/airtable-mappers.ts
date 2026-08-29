@@ -46,13 +46,22 @@ export function mapAirtableStatusToSubscriber(
   return null;
 }
 
-export function mapSubscriberHarvestRecord(input: {
-  id: string;
-  fields: Record<string, unknown>;
-}): Harvest | null {
+export function mapSubscriberHarvestRecord(
+  input: {
+    id: string;
+    fields: Record<string, unknown>;
+  },
+  opts?: { allowDraft?: boolean }
+): Harvest | null {
   const f = input.fields;
-  const status = mapAirtableStatusToSubscriber(getSingleSelectField(f, "Status"));
-  if (!status) return null;
+  let status = mapAirtableStatusToSubscriber(getSingleSelectField(f, "Status"));
+  if (!status) {
+    if (!opts?.allowDraft) return null;
+    const raw = getSingleSelectField(f, "Status")?.trim();
+    if (raw !== "Draft") return null;
+    // Preview drafts as if published so home UI renders normally.
+    status = "Published";
+  }
 
   return {
     id: input.id,
@@ -67,6 +76,9 @@ export function mapSubscriberHarvestRecord(input: {
     endTime: getStringField(f, "End Time"),
     recipeTitle: getStringField(f, "Featured Recipe Title"),
     recipeUrl: getStringField(f, "Recipe URL"),
+    bbSponsorName: getStringField(f, "Bread & Butter Jam Sponsor"),
+    bbMessage: getLongTextField(f, "Bread & Butter Jam Message"),
+    bbImageUrl: getStringField(f, "Bread & Butter Image URL"),
     storageTips: getLongTextField(f, "Storage Tips"),
     headerImageUrl: getStringField(f, "Header Image URL"),
     status,

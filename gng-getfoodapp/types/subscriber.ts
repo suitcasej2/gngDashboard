@@ -1,5 +1,6 @@
 export type SubscriptionStatus =
   | "Active"
+  | "Staff"
   | "Inactive"
   | "Deposit only"
   | "Subscription only";

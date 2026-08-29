@@ -166,7 +166,7 @@ export function PushSettings() {
           Push notifications
         </CardTitle>
         <CardDescription>
-          Get alerts when a new harvest goes live or the CEO sends a message.
+          Get alerts when a new harvest goes live or Mia sends a broadcast.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { BrandLogo } from "@/components/brand-logo";
 import { LoginForm } from "@/components/auth/login-form";
@@ -14,7 +15,7 @@ export default function LoginPage() {
     <div className="min-h-dvh w-full lg:grid lg:grid-cols-2">
       <div className="relative hidden min-h-dvh lg:block">
         <Image
-          src="/HeaderImage.png"
+          src="/HeaderImage.jpg"
           alt=""
           fill
           priority
@@ -41,13 +42,24 @@ export default function LoginPage() {
             <BrandLogo size={96} className="lg:hidden" />
             <div>
               <h1 className="font-heading text-2xl lg:text-3xl">Sign in</h1>
-              <p className="text-sm text-muted-foreground">Active subscribers only</p>
+              <p className="text-sm text-muted-foreground">
+                Active subscribers and staff
+              </p>
             </div>
           </div>
           <Suspense fallback={<p className="text-center text-sm lg:text-left">Loading…</p>}>
             <div className="space-y-4">
               <InstallAppButton />
               <LoginForm />
+              <p className="text-center text-sm text-muted-foreground lg:text-left">
+                Need help putting this on your phone?{" "}
+                <Link
+                  href="/install"
+                  className="font-medium text-foreground underline-offset-4 hover:underline"
+                >
+                  Easy install guide
+                </Link>
+              </p>
             </div>
           </Suspense>
         </div>

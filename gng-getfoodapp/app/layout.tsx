@@ -26,9 +26,17 @@ export const metadata: Metadata = {
   title: "GNG Get Food",
   description: "Subscriber portal for harvest RSVPs, impact, and community chat",
   icons: {
-    icon: [{ url: "/AppIcon.png", sizes: "540x540", type: "image/png" }],
-    apple: [{ url: "/AppIcon.png", sizes: "540x540", type: "image/png" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
+  applicationName: "Get Food",
   appleWebApp: {
     capable: true,
     title: "GNG Get Food",
@@ -68,7 +76,7 @@ export default function RootLayout({
           />
         ) : null}
         <Script id="register-sw" strategy="beforeInteractive">
-          {`if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(function(){});}`}
+          {`(function(){if(!("serviceWorker"in navigator))return;navigator.serviceWorker.getRegistrations().then(function(regs){return Promise.all(regs.map(function(r){var u=r.active&&r.active.scriptURL||r.installing&&r.installing.scriptURL||r.waiting&&r.waiting.scriptURL||"";if(u.indexOf("/sw.js")===-1&&u.indexOf("OneSignalSDKWorker")!==-1){return r.unregister();}return null;}));}).finally(function(){navigator.serviceWorker.register("/sw.js",{scope:"/"}).then(function(r){return r.update();}).catch(function(){});});})();`}
         </Script>
         <NavigationProvider>
           <SideNavProvider>

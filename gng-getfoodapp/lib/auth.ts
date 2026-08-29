@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import {
+  canSignIn,
   findSubscriberByEmail,
   getSubscriberById,
-  isActiveSubscriber,
 } from "@/lib/subscriber";
 import { isAdminEmail } from "@/lib/admin-emails";
 import { SESSION_COOKIE } from "@/lib/session";
@@ -33,7 +33,7 @@ export async function signInWithEmail(email: string): Promise<SignInResult> {
     };
   }
 
-  if (!isActiveSubscriber(subscriber) && !isAdminEmail(subscriber.email)) {
+  if (!canSignIn(subscriber) && !isAdminEmail(subscriber.email)) {
     return {
       ok: false,
       message: "This account is not active. Contact GNG to renew your subscription.",
@@ -54,7 +54,7 @@ export async function getSessionSubscriber(): Promise<Subscriber | null> {
 
   const subscriber = await getSubscriberById(sessionId);
   if (!subscriber) return null;
-  if (!isActiveSubscriber(subscriber) && !isAdminEmail(subscriber.email)) {
+  if (!canSignIn(subscriber) && !isAdminEmail(subscriber.email)) {
     return null;
   }
   return subscriber;

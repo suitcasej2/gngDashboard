@@ -24,6 +24,13 @@ function harvestNameFromLookup(fields: Record<string, unknown>) {
   return null;
 }
 
+/**
+ * RSVPs linked to a currently live harvest.
+ * Matches Publish / Published / Sent (FIND('Publish') covers both Publish + Published).
+ */
+const LIVE_HARVEST_STATUS_FORMULA =
+  "OR(FIND('Sent', ARRAYJOIN({Status (from Harvests)})), FIND('Publish', ARRAYJOIN({Status (from Harvests)})))";
+
 export type DeliveryRow = {
   id: string;
   name: string | null;
@@ -62,7 +69,7 @@ export async function listSentRsvpChoiceCounts(): Promise<RsvpChoiceCount[]> {
 
   const records = await base(tableName)
     .select({
-      filterByFormula: "FIND('Sent', ARRAYJOIN({Status (from Harvests)}))",
+      filterByFormula: LIVE_HARVEST_STATUS_FORMULA,
     })
     .all();
 
@@ -75,7 +82,9 @@ export async function listSentRsvpChoiceCounts(): Promise<RsvpChoiceCount[]> {
 
   return Array.from(counts.entries())
     .map(([choice, count]) => ({ choice, count }))
-    .sort((a, b) => (b.count !== a.count ? b.count - a.count : a.choice.localeCompare(b.choice)));
+    .sort((a, b) =>
+      b.count !== a.count ? b.count - a.count : a.choice.localeCompare(b.choice)
+    );
 }
 
 export async function listSentRsvpsAll(): Promise<AllRsvpRow[]> {
@@ -84,7 +93,7 @@ export async function listSentRsvpsAll(): Promise<AllRsvpRow[]> {
 
   const records = await base(tableName)
     .select({
-      filterByFormula: "FIND('Sent', ARRAYJOIN({Status (from Harvests)}))",
+      filterByFormula: LIVE_HARVEST_STATUS_FORMULA,
     })
     .all();
 
@@ -105,8 +114,7 @@ export async function listSentNeedsDelivery(): Promise<DeliveryRow[]> {
 
   const records = await base(tableName)
     .select({
-      filterByFormula:
-        "AND(FIND('Sent', ARRAYJOIN({Status (from Harvests)})), {Needs Delivery?} = TRUE())",
+      filterByFormula: `AND(${LIVE_HARVEST_STATUS_FORMULA}, {Needs Delivery?} = TRUE())`,
     })
     .all();
 
@@ -128,8 +136,7 @@ export async function listSentGiftRecipients(): Promise<GiftRecipientRow[]> {
 
   const records = await base(tableName)
     .select({
-      filterByFormula:
-        "AND(FIND('Sent', ARRAYJOIN({Status (from Harvests)})), {RSVP Choice} = 'Gift')",
+      filterByFormula: `AND(${LIVE_HARVEST_STATUS_FORMULA}, {RSVP Choice} = 'Gift')`,
     })
     .all();
 
@@ -151,8 +158,7 @@ export async function listSentNonRespondersAutoDonate(): Promise<NonResponderRow
 
   const records = await base(tableName)
     .select({
-      filterByFormula:
-        "AND(FIND('Sent', ARRAYJOIN({Status (from Harvests)})), FIND('Auto-Donate', {Notes}))",
+      filterByFormula: `AND(${LIVE_HARVEST_STATUS_FORMULA}, FIND('Auto-Donate', {Notes}))`,
     })
     .all();
 
@@ -166,4 +172,3 @@ export async function listSentNonRespondersAutoDonate(): Promise<NonResponderRow
     };
   });
 }
-
