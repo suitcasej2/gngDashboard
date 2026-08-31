@@ -39,10 +39,7 @@ export function LoginForm() {
     <Card className="rounded-2xl border-[#FFF904]/35 bg-background/70 backdrop-blur ring-1 ring-foreground/5">
       <CardHeader>
         <CardTitle>Sign in</CardTitle>
-        <CardDescription>
-          Enter your GNG email. Admins setting up Face ID will continue to
-          enrollment after sign-in.
-        </CardDescription>
+        <CardDescription>Enter your GNG email.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
